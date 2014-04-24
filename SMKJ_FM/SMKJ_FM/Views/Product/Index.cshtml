@@ -1,0 +1,366 @@
+﻿@{
+    ViewBag.Title = "Product";
+    Layout = "~/Views/Shared/_TabLayout.cshtml";
+}
+
+@section JS{
+@*变量声明*@
+<script>
+    Tools.Namespace.register("SMKJ_FM.Product.Search");
+    Tools.Namespace.register("SMKJ_FM.Product.Result");
+    Tools.Namespace.register("SMKJ_FM.Product.Detail");
+    Tools.Namespace.register("SMKJ_FM.Product.Import");
+    SMKJ_FM.Product.InsertUrl = "/Product/Insert";
+    SMKJ_FM.Product.DeleteUrl = "/Product/Delete";
+    SMKJ_FM.Product.UpdateUrl = "/Product/Update";
+    SMKJ_FM.Product.SelectUrl = "/Product/Select";
+    SMKJ_FM.Product.UploadUrl = "/Product/Upload";
+    SMKJ_FM.Product.SelectResUrl = "/Product/SelectProductRes";
+</script>
+
+@*初始化组件*@
+
+@*文件对话框*@
+<script>
+    $(function () {
+        SMKJ_FM.Product.Import.FileInput = $("#Product_Import_Uploadify").uploadify({
+            uploader: SMKJ_FM.Product.UploadUrl,           // 服务器端处理地址
+            swf: "/Scripts/uploadify/uploadify.swf",
+            cancelImg: "/Scripts/uploadify/uploadify-cancel.png",
+            formData: { "userID": Home_User.ID },
+            width: 60,                          // 按钮的宽度
+            height: 23,                         // 按钮的高度
+            buttonText: "选择文件",                 // 按钮上的文字
+            buttonCursor: 'hand',                // 按钮的鼠标图标
+            fileObjName: 'filedata',            // 上传参数名称
+            // 两个配套使用
+            fileTypeExts: "*.xml",             // 扩展名
+            fileTypeDesc: "请选择产品资源文件",     // 文件说明
+            auto: false,                // 选择之后，自动开始上传
+            multi: true,               // 是否支持同时上传多个文件
+            queueSizeLimit: 5,        // 允许多文件上传的时候，同时上传文件的个数
+            onUploadSuccess: function (file, data, response) {
+                var msg = eval("(" + data + ")");
+                $.messager.show({
+                    title: "提示",
+                    msg: msg.Msg + "\r\n" + msg.Obj,
+                    showType: "show",
+                    timeout: 3000
+                });
+            },
+            onUploadError: function (file, errorCode, errorMsg, errorString) {
+                $.messager.alert("错误",errorMsg);
+            }
+        });
+        SMKJ_FM.Product.Import.Dialog = $("#Product_Import_Dialog").show().dialog({
+            title: "产品文件上传",
+            width: 400,
+            height: 200,
+            modal: true,
+            iconCls: "icon-tip",
+            closed: true,
+            buttons: [
+            { text: "上传", handler: function () {
+                SMKJ_FM.Product.Import.FileInput.uploadify("upload");
+            }
+            },
+            { text: "关闭", handler: function () {
+                SMKJ_FM.Product.Import.FileInput.val(null);
+                SMKJ_FM.Product.Import.Dialog.dialog({ closed: true });
+            }
+            }
+        ]
+        });
+    });
+</script>
+
+@*明细对话框*@
+<script>
+    $(function () {
+        SMKJ_FM.Product.Detail.Dialog = $("#Product_Detail_Dialog").show().dialog({
+            title: "产品信息",
+            width: 700,
+            height: 500,
+            closed: true,
+            modal: true,
+            onBeforeOpen: function () {
+                SMKJ_FM.Product.Detail.Form.form("clear");
+            },
+            buttons: [
+           {
+               text: "保存",
+               iconCls: "icon-save"
+           },
+            {
+                text: "关闭",
+                iconCls: "icon-no",
+                handler: function () {
+                    SMKJ_FM.Product.Detail.Dialog.dialog({ closed: true });
+                }
+            }
+            ]
+        }
+        );
+        SMKJ_FM.Product.Detail.Form = $("#Product_Detail_Form").form();
+
+        SMKJ_FM.Product.Detail.ProductCode = $("#Product_Detail_ProductCode").validatebox({
+            required: true,
+            missingMessage: "产品编码必须填写!"
+        });
+        SMKJ_FM.Product.Detail.ProductName = $("#Product_Detail_ProductName").validatebox({
+            required: true,
+            missingMessage: "产品名称必须填写!"
+        });
+        SMKJ_FM.Product.Detail.SubNo = $("#Product_Detail_SubNo").validatebox({
+            required: true,
+            missingMessage: "子类编码必须填写!"
+        });
+        SMKJ_FM.Product.Detail.PermitNo = $("#Product_Detail_PermitNo");
+
+        SMKJ_FM.Product.Detail.PackSpec = $("#Product_Detail_PackSpec");
+
+        SMKJ_FM.Product.Detail.PackUnit = $("#Product_Detail_PackUnit");
+
+        SMKJ_FM.Product.Detail.ProductType = $("#Product_Detail_ProductType");
+
+        SMKJ_FM.Product.Detail.Spec = $("#Product_Detail_Spec");
+
+        SMKJ_FM.Product.Detail.ValidTime = $("#Product_Detail_ValidTime");
+
+        SMKJ_FM.Product.Detail.ValidTimeUnit = $("#Product_Detail_ValidTimeUnit").combobox({
+            url: SMKJ_FM.Get.ValidTimeUnit,
+            width: 50,
+            editable: false,
+            multiple: false,
+            valueField: "ID",
+            textField: "Text"
+        });
+
+        SMKJ_FM.Product.Detail.ProductCategory = $("#Product_Detail_ProductCategory").combobox({
+            url: SMKJ_FM.Get.ProductCategory,
+            editable: false,
+            multiple: false,
+            width:155,
+            valueField: "ID",
+            textField: "CategoryName",
+            onSelect: function (record) {
+                SMKJ_FM.Product.Detail.DetailType.combobox("clear");
+                SMKJ_FM.Product.Detail.DetailType.combobox("loadData", record.DetailTypes);
+                SMKJ_FM.Product.Detail.GetCodeType.combobox("setValue", record.GetCodeType);
+            }
+        });
+
+        SMKJ_FM.Product.Detail.DetailType = $("#Product_Detail_DetailType").combobox({
+            editable: false,
+            multiple: false,
+            width:155,
+            valueField: "ID",
+            textField: "DetailTypeName"
+        });
+
+        SMKJ_FM.Product.Detail.GetCodeType = $("#Product_Detail_GetCodeType").combobox({
+            url: SMKJ_FM.Get.GetCodeType,
+            value: 0,
+            width: 155,
+            disabled:true,
+            multiple: false,
+            editable: false,
+            valueField: "ID",
+            textField: "Text"
+        });
+
+        SMKJ_FM.Product.Detail.Datagrid = $("#Product_Detail_Datagrid").datagrid({
+            collapsible: true,
+            fitColumns: true,
+            singleSelect: true,
+            rownumbers: true,
+            height: 320,
+            columns: [[
+                {field:"ID",title:"ID",width:100,hidden:true},
+                { field: "ProductResCode", title: "资源码", width: 100 },
+                { field: "PackageSpec.PackageSpec", title: "包装规格", width: 100 },
+                { field: "PackageSpec.PackageRatio", title: "包装比例", width: 100 },
+                { field: "CodeVersion", title: "码版本", width: 100 },
+                { field: "LevelNo", title: "级别号", width: 100 }
+            ]],
+            toolbar: [
+                { text: "增加", iconCls: "icon-add" },
+                "-",
+                { text: "删除", iconCls: "icon-remove" },
+                "-",
+                { text: "编辑", iconCls: "icon-edit" }
+            ]
+        });
+    });
+</script>
+
+@*查询选项*@
+<script>
+    $(function () {
+        SMKJ_FM.Product.Search.Form = $("#Product_Search_Form").form();
+        SMKJ_FM.Product.Search.ProductCode = $("#Product_Search_ProductCode").validatebox();
+        SMKJ_FM.Product.Search.ProductName = $("#Product_Search_ProductName").validatebox();
+        SMKJ_FM.Product.Search.PermitNo = $("#Product_Search_PermitNo").validatebox();
+        SMKJ_FM.Product.Search.SubNo = $("#Product_Search_SubNo").validatebox();
+        SMKJ_FM.Product.Search.SearchBtn = $("#Product_Search_SearchBtn").linkbutton({ iconCls: "icon-search" });
+        SMKJ_FM.Product.Search.SearchBtn.click(function () {
+            SMKJ_FM.Product.Result.Datagrid.datagrid({
+                queryParams: Tools.serializeObject(SMKJ_FM.Product.Search.Form)
+            })
+        });
+        SMKJ_FM.Product.Search.CleanBtn = $("#Product_Search_ClearBtn").linkbutton({ iconCls: "icon-cancel" });
+        SMKJ_FM.Product.Search.CleanBtn.click(function () {
+            SMKJ_FM.Product.Search.Form.form("clear");
+        });
+    });
+</script>
+
+@*查询结果*@
+<script>
+    $(function () {
+        SMKJ_FM.Product.Result.Datagrid = $("#Product_Result_Datagrid").datagrid({
+            url: SMKJ_FM.Product.SelectUrl,
+            method: "post",
+            fit: true,
+            collapsible: true,
+            queryParams: Tools.serializeObject(SMKJ_FM.Product.Search.Form),
+            singleSelect: true,
+            rownumbers: true,
+            pagination: true,
+            idField:"ID",
+            pageSize: 20,
+            pageList: [10, 20, 50, 100],
+            frozenColumns: [[
+            { field: "ID", title: "ID", width: 100, hidden: true },
+            { field: "ProductCode", title: "产品编码", width: 100 },
+            { field: "ProductName", title: "产品名称", width: 150 },
+            { field: "SubNo", title: "子类编码", width: 100 }
+        ]],
+            columns: [[
+            { title: "类别",width: 100, colspan: 3},
+            { field: "StatusStr", title: "状态", width: 50,rowspan:2 },
+            { field: "ProductType", title: "剂型", width: 100, rowspan: 2 },
+            { field: "Spec", title: "规格", width: 100, rowspan: 2 },
+            { field: "PermitNo", title: "批文号", width: 150, rowspan: 2 },
+            { field: "PackSpec", title: "包装规格", width: 50, rowspan: 2 },
+            { field: "PackUnit", title: "包装单位", width: 50, rowspan: 2 },
+            { field: "ValidTime", title: "质保期", width: 50, rowspan: 2 },
+            { field: "ValidTimeUnitStr", title: "时间单位", width: 50, rowspan: 2 },
+            { field: "CreateUserName", title: "创建用户", width: 80, rowspan: 2 },
+            { field: "CreateDate", title: "创建日期", width: 150, rowspan: 2 }
+        ],
+        [
+            { field: "Product_Category.CategoryName", title: "类别", width: 150 ,rowspan:1},
+            {field:"Detail_Type.DetailTypeCode",title:"明细编码",width:150 ,rowspan:1},
+            { field: "Detail_Type.DetailTypeName", title: "明细类别", width: 150 ,rowspan:1 }
+        ]
+        ],
+            toolbar: [
+            "-",
+            { text: "增加", iconCls: "icon-add", handler: function () {
+                SMKJ_FM.Product.Detail.Dialog.dialog({ closed: false });
+            }
+            },
+            "-",
+            { text: "删除", iconCls: "icon-remove" },
+            "-",
+            { text: "编辑", iconCls: "icon-edit", handler: function () {
+                var node = SMKJ_FM.Product.Result.Datagrid.datagrid("getSelected");
+                if (node != null) {
+                    SMKJ_FM.Product.Detail.Dialog.dialog({ closed: false });
+                    SMKJ_FM.Product.Detail.Form.form("load", node);
+                    SMKJ_FM.Product.Detail.ProductCategory.combobox("select", node.Product_Category.ID);
+                    SMKJ_FM.Product.Detail.DetailType.combobox("setValue", node.Detail_Type.ID);
+                    SMKJ_FM.Product.Detail.Datagrid.datagrid({
+                        url: SMKJ_FM.Product.SelectResUrl,
+                        queryParams: {ProductID:node.ID}
+                    });
+                }
+            }
+            },
+            "-",
+            { text: "导入", iconCls: "icon-tip", handler: function () {
+                SMKJ_FM.Product.Import.Dialog.dialog({
+                    closed: false
+                })
+            }
+            }
+        ]
+
+        });
+    });
+</script>
+
+}
+
+@section Components{
+<div id="Product_Detail_Dialog" style="display:none">
+    <form id="Product_Detail_Form" method="post">
+        <input id="Product_Detail_ID" name="ID" style="display:none"/>
+        <table>
+            <tr>
+                <th style="width:150">产品编码</th>
+                <td style="width:150"><input type="text" id="Product_Detail_ProductCode" name="ProductCode"/></td>
+                <th style="width:150">产品名称</th>
+                <td style="width:150"><input type="text" id="Product_Detail_ProductName" name="ProductName"/></td>
+                <th style="width:150">子类编码</th>
+                <td style="width:150"><input type="text" id="Product_Detail_SubNo" name="SubNo"/></td>
+            </tr>
+            <tr>
+                <th>批文号</th>
+                <td><input type="text" id="Product_Detail_PermitNo" name="PermitNo"/></td>
+                <th>包装规格</th>
+                <td><input type="text" id="Product_Detail_PackSpec" name="PackSpec"/></td>
+                <th>包装单位</th>
+                <td><input type="text" id="Product_Detail_PackUnit" name="PackUnit"/></td>
+            </tr>
+            <tr>
+                <th>产品类型</th>
+                <td><input type="text" id="Product_Detail_ProductType" name="ProductType"/></td>
+                <th>产品规格</th>
+                <td><input type="text" id="Product_Detail_Spec" name="Spec" /></td>
+                <th>有效期</th>
+                <td><input type="text" id="Product_Detail_ValidTime" name="ValidTime" style="width:100px"/><input type="text" id="Product_Detail_ValidTimeUnit" name="ValidTimeUnit" /></td>
+            </tr>
+            <tr>
+                <th>产品类别</th>
+                <td><input type="text" id="Product_Detail_ProductCategory" name="ProductCategory"/></td>
+                <th>产品明细类别</th>
+                <td><input type="text" id="Product_Detail_DetailType" name="DetailType"/></td>
+                <th>取码方式</th>
+                <td><input type="text" id="Product_Detail_GetCodeType" name="GetCodeType"  /></td>
+            </tr>
+        </table>
+        <table id="Product_Detail_Datagrid"  style="overflow:scroll"></table>
+    </form>
+</div>
+<div id="Product_Import_Dialog" style="display:none">
+    <table>
+        <tr>
+            <td><span id="Product_Import_Uploadify" /></td>
+        </tr>
+    </table>
+</div>
+}
+
+@section SearchParams{
+<form id="Product_Search_Form" method="post">
+    <table>
+        <tr>
+            <th>产品编码</th>
+            <td><input id="Product_Search_ProductCode" name="ProductCode"/></td>
+            <th>产品名称</th>
+            <td><input id="Product_Search_ProductName" name="ProductName"/></td>
+            <th>批准文号</th>
+            <td><input id="Product_Search_PermitNo" name="PermitNo"/></td>
+            <td><a id="Product_Search_SearchBtn">查询</a><a id="Product_Search_ClearBtn">清空</a></td>
+        </tr>
+
+    </table>
+</form>
+}
+
+@section SearchResult{
+<table id="Product_Result_Datagrid" style="overflow:scroll"></table>
+
+}

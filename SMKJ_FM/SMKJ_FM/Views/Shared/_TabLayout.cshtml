@@ -1,0 +1,16 @@
+﻿@*javascript*@
+@RenderSection("JS", required: true)
+
+@*组件*@
+@RenderSection("Components", required: true)
+
+<div class="easyui-layout" fit="true">
+    @*查询条件*@
+    <div region="north" title="查询" style="width:auto;height:100px" data-options="iconCls:'icon-search'"  >
+    @RenderSection("SearchParams", required: true)
+    </div>
+    @*查询结果*@
+    <div region="center" style="overflow:hidden">            
+    @RenderSection("SearchResult", required: true)
+    </div>
+</div>

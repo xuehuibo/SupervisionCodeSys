@@ -1,0 +1,70 @@
+﻿@{
+    ViewBag.Title = "码导入";
+    Layout = "~/Views/Shared/_SimpleLayout.cshtml";
+}
+@section JS{
+<script>
+    Tools.Namespace.register("SMKJ_FM.PackageCode");
+    SMKJ_FM.PackageCode.UploadUrl = "/PackCodeImport/Upload";
+</script>
+
+}
+@section Components{
+<script>
+$(
+    function () {
+        SMKJ_FM.PackageCode.FileInput = $("#PackageCode_Uploadify").uploadify({
+            uploader: SMKJ_FM.PackageCode.UploadUrl,           // 服务器端处理地址
+            swf: "/Scripts/uploadify/uploadify.swf",
+            cancelImg: "/Scripts/uploadify/uploadify-cancel.png",
+            formData: { "userID": Home_User.ID },
+            width: 60,                          // 按钮的宽度
+            height: 23,                         // 按钮的高度
+            buttonText: "选择文件",                 // 按钮上的文字
+            buttonCursor: 'hand',                // 按钮的鼠标图标
+            fileObjName: 'filedata',            // 上传参数名称
+            // 两个配套使用
+            fileTypeExts: "*.txt",             // 扩展名
+            fileTypeDesc: "请选择监管码文件",     // 文件说明
+            auto: false,                // 选择之后，自动开始上传
+            multi: true,               // 是否支持同时上传多个文件
+            queueSizeLimit: 5,        // 允许多文件上传的时候，同时上传文件的个数
+            onUploadSuccess: function (file, data, response) {
+                var msg = eval("(" + data + ")");
+                $.messager.show({
+                    title: "提示",
+                    msg: msg.Msg,
+                    showType: "show",
+                    timeout: 3000
+                });
+            },
+            onUploadError: function (file, errorCode, errorMsg, errorString) {
+                $.messager.alert("错误",errorMsg);
+            }
+        });
+});
+</script>
+<script>
+    $(function () {
+        SMKJ_FM.PackageCode.UploadBtn = $("#PackageCode_UploadBtn").linkbutton({
+            iconCls: "icon-save"
+        }
+        );
+        SMKJ_FM.PackageCode.UploadBtn.click(function () {
+            SMKJ_FM.PackageCode.FileInput.uploadify("upload");
+        });
+    });
+</script>
+}
+
+@section Body{
+   <table>
+        <tr>
+            <td><span id="PackageCode_Uploadify" /></td>
+        </tr>
+        <tr>
+            <td><a id="PackageCode_UploadBtn">上传</a></td>
+        </tr>
+    </table>
+}
+

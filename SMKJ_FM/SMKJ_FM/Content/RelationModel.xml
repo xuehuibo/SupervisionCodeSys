@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="关联关系XML Schema-3.0.xsd" License="">
+<Events version="3.0">
+<Event name="RelationCreate">
+</Event>
+</Events>
+</Document>

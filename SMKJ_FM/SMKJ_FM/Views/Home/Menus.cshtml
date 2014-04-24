@@ -1,0 +1,70 @@
+﻿<script>
+    @*注销用户*@
+    function Home_Menus_Logoff() {
+        $.messager.confirm("确认注销", "确定注销用户？", function (r) {
+            if (r) {
+                $("body").load("/Users/Logoff");
+            }
+        }, "question");
+    }
+
+    @*登陆后初始化菜单*@
+    function Home_Menus_Init() {
+        Home_MenuTree = $("#Home_MenuTree").tree({ url: "/Home/GetMenusTree",
+            lines: true,
+            onClick: function (node) {
+                if (Home_MainTabs.tree("isLeaf", node.target)) {
+                    OpenTab(node.text, node.attributes.Url);
+                }
+                else {
+                    Home_MenuTree.tree("toggle", node.target);
+                }
+            },
+            animate: true
+        });
+        $("#Home_UserInfoPanel_OrgName").text(Home_User.UserOrg.OrgName);
+        $("#Home_UserInfoPanel_UserName").text(Home_User.UserName);
+    }
+
+    function OpenTab(menuName, url) {
+        if (Home_MainTabs.tabs("exists", menuName)) {
+            @*选择已打开面板*@
+            Home_MainTabs.tabs("select", menuName);
+        }
+        else {
+            @*新建面板*@
+            Home_MainTabs.tabs("add", {
+                title: menuName,
+                href: url,
+                closable: true,
+                fit: true
+            })
+        }
+    }
+</script>
+<div class="easyui-panel" fit="true">
+<div  class="easyui-accordion" style="height:auto;width:auto" >
+    <div title="用户信息">
+        <table style="width:auto">
+            <tr align="right" >
+                <th style="width:50px">组&nbsp;&nbsp;&nbsp;&nbsp;织:</th>
+                <td id="Home_UserInfoPanel_OrgName"></td>
+            </tr>
+            <tr align="right">
+                <th>用户名:</th>
+                <td id="Home_UserInfoPanel_UserName"></td>
+            </tr>
+            <tr align="right">
+                <th></th>
+                <td align="right"><a class="easyui-linkbutton" iconCls="icon-edit" onclick="Home_ChangePwd_Dialog.dialog('open')">修改密码</a>
+                <a class="easyui-linkbutton" iconCls="icon-no" onclick="Home_Menus_Logoff()" style="text-align:right">注销用户</a></td>
+            </tr>
+        </table>
+    </div>
+    <div>
+    </div>
+</div>
+<div class="easyui-panel" data-options="title:'功能菜单'" style="overflow:auto;" fit="true">
+    <ul id="Home_MenuTree" class="easyui-tree" fit="true" ></ul>
+</div>
+</div>

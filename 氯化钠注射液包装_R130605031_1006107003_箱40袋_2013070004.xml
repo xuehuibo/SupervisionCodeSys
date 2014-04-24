@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="关联关系XML Schema-3.0.xsd" License="">
+<Events version="3.0">
+<Event name="RelationCreate">
+<Relation productCode="1006107" subTypeNo="1006107003" cascade="1" packageSpec="箱40袋" comment="" >
+<Batch batchNo="R130605031" madeDate="2013-06-05" validateDate="2015-05-31" workshop="01" lineName="01" lineManager="XXX" >
+<Code curCode="81063110000833191908" packLayer="1" parentCode="" flag="0" />
+<Code curCode="81063110000697559051" packLayer="1" parentCode="" flag="0" />
+<Code curCode="81063110000846517830" packLayer="1" parentCode="" flag="0" />
+<Code curCode="81063110000922520496" packLayer="1" parentCode="" flag="0" />
+<Code curCode="81063110000834166091" packLayer="1" parentCode="" flag="0" />
+<Code curCode="81063110000832282613" packLayer="1" parentCode="" flag="0" />
+<Code curCode="81063110000936720778" packLayer="1" parentCode="" flag="0" />
+<Code curCode="81063110000936431483" packLayer="1" parentCode="" flag="0" />
+<Code curCode="81063110000845588958" packLayer="1" parentCode="" flag="0" />
+<Code curCode="81063110000842466326" packLayer="1" parentCode="" flag="0" />
+</Batch>
+</Relation>
+</Event>
+</Events>
+</Document>

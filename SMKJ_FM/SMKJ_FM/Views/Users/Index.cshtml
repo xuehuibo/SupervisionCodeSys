@@ -1,0 +1,322 @@
+﻿@{
+    ViewBag.Title = "Users";
+    Layout = "~/Views/Shared/_TabLayout.cshtml";
+}
+
+@section JS{
+
+@*声明变量空间*@
+<script>
+    Tools.Namespace.register("SMKJ_FM.Users.Search");
+    Tools.Namespace.register("SMKJ_FM.Users.Result");
+    Tools.Namespace.register("SMKJ_FM.Users.Detail");
+    SMKJ_FM.Users.SelectUrl = "/Users/Select";
+    SMKJ_FM.Users.UpdateUrl = "/Users/Update";
+    SMKJ_FM.Users.InsertUrl = "/Users/Insert";
+    SMKJ_FM.Users.DeleteUrl = "/Users/Delete";
+</script>
+
+@*初始化组件*@
+@*查询选项*@
+<script>
+    $(function () {
+        SMKJ_FM.Users.Search.Form = $("#Users_Search_Form").form();
+        SMKJ_FM.Users.Search.UserCode = $("#Users_Search_UserCode");
+        SMKJ_FM.Users.Search.UserName = $("#Users_Search_UserName");
+        SMKJ_FM.Users.Search.Role = $("#Users_Search_Role").combogrid({
+            panelWidth: 310,
+            required:false,
+            idField: "RoleCode",
+            textField: "RoleName",
+            url: SMKJ_FM.Get.Role,
+            columns: [[
+                { field: "RoleCode", title: "角色编码", width: 150 },
+                { field: "RoleName", title: "角色名称", width: 150 }
+            ]]
+        });
+        SMKJ_FM.Users.Search.Org = $("#Users_Search_Org").combotree({
+            url: SMKJ_FM.Get.Org,
+            required:false
+        });
+        SMKJ_FM.Users.Search.XgDateBegin = $("#Users_Search_XgDateBegin").datetimebox({
+            editable: false,
+            required:false
+        });
+        SMKJ_FM.Users.Search.XgDateEnd = $("#Users_Search_XgDateEnd").datetimebox({
+            editable: false,
+            required:false
+        });
+        SMKJ_FM.Users.Search.HasDateParam = $("#Users_Search_HasDateParam");
+        SMKJ_FM.Users.Search.HasDateParam.click(function () {
+            if (SMKJ_FM.Users.Search.HasDateParam.attr("checked") == undefined) {
+                SMKJ_FM.Users.Search.XgDateBegin.datetimebox("clear");
+                SMKJ_FM.Users.Search.XgDateEnd.datetimebox("clear");
+            }
+        });
+        SMKJ_FM.Users.Search.Status = $("#Users_Search_Status").combobox({
+            editable: false,
+            multiple: true,
+            required: false,
+            url: SMKJ_FM.Get.Status,
+            valueField:"ID",
+            textField:"Text"
+        });
+       
+
+        SMKJ_FM.Users.Search.SearchBtn = $("#Users_Search_SearchBtn").linkbutton({
+            iconCls: "icon-search"
+        });
+        SMKJ_FM.Users.Search.SearchBtn.click(function () {
+            SMKJ_FM.Users.Result.Datagrid.datagrid({
+                queryParams: Tools.serializeObject(SMKJ_FM.Users.Search.Form)
+            });
+        });
+        SMKJ_FM.Users.Search.CleanBtn = $("#Users_Search_CleanBtn").linkbutton({
+            iconCls: "icon-cancel"
+        });
+        SMKJ_FM.Users.Search.CleanBtn.click(function () {
+            SMKJ_FM.Users.Search.Form.form("clear");
+        });
+
+    });
+</script>
+
+@*查询结果*@
+<script>
+    $(function () {
+        SMKJ_FM.Users.Result.Datagrid = $("#Users_Result_Datagrid").datagrid({
+            url:SMKJ_FM.Users.SelectUrl ,
+            queryParams:Tools.serializeObject(SMKJ_FM.Users.Search.Form),
+            fit:true,
+            fitColumns:true,
+            method:"post",
+            singleSelect: true,
+            idField: "ID",
+            rownumber:true,
+            columns:[[
+            {field:"ID",title:"ID",hidden:true,width:100},
+            {field:"UserCode",title:"用户编码",width:100},
+            {field:"UserName",title:"用户名称",width:100},
+            {field:"RoleName",title:"角色",width:100},
+            {field:"OrgName",title:"组织",width:100},
+            {field:"XgDate",title:"修改时间",width:100},
+            {field:"StatusStr",title:"状态",width:100}
+            ]],
+            pagination:true,
+            pageSize:20,
+            pageList:[10,20,50,100],
+            toolbar: [
+            {text:"增加",
+               iconCls:"icon-add",
+               handler:function(){
+                SMKJ_FM.Users.Detail.Dialog.dialog({
+                title:"增加",
+                closed:false
+                });
+               }
+            },
+            "-",
+            {text:"删除",
+                iconCls:"icon-remove",
+                handler:function(){
+                    var node =SMKJ_FM.Users.Result.Datagrid.datagrid("getSelected");
+                    SMKJ_FM.Users.Result.Datagrid.datagrid("unselectAll");
+                    if(node!=null){
+                        if(node.UserCode=="SUPER"){
+                            $.messager.alert("提示","超级用户不允许删除!","info")
+                            return;
+                        }
+                        $.messager.confirm("提示","确认删除该用户?",function(r){
+                            if(r){
+                                $.post(SMKJ_FM.Users.DeleteUrl,{ID:node.ID},function(data){
+                                    var msg=eval("("+data+")");
+                                    if(msg.Success){
+                                        $.messager.show({
+                                            title:"提示",
+                                            msg:msg.Msg,
+                                            timeout:3000,
+                                            showtype:"show"
+                                        });
+                                        SMKJ_FM.Users.Result.Datagrid.datagrid("reload",{
+                                            queryParams:Tools.serializeObject(SMKJ_FM.Users.Detail.Form)
+                                        });
+
+                                    }
+                                    else{
+                                        $.messager.alert("错误",msg.Msg,"error");
+                                    }
+                                })
+                            }
+                        })
+                    }
+                }
+            },
+            "-",
+            {text:"编辑",
+                iconCls:"icon-edit",
+                handler:function(){
+                    var node=SMKJ_FM.Users.Result.Datagrid.datagrid("getSelected");
+
+                      SMKJ_FM.Users.Detail.Dialog.dialog({
+                        title:"增加",
+                        closed:false
+                        });
+                        SMKJ_FM.Users.Detail.Form.form("load",node);
+                        SMKJ_FM.Users.Detail.UserCode.attr("readonly",true);
+                }
+            }
+            ]
+
+        });
+    });
+</script>
+
+@*明细对话框*@
+<script>
+    $(function () {
+        SMKJ_FM.Users.Detail.Dialog = $("#Users_Detail_Dialog").show().dialog({
+            width: 400,
+            height: 450,
+            modal: true,
+            closed: true,
+            onBeforeOpen: function () {
+                SMKJ_FM.Users.Detail.Form.form("clear");
+            },
+            buttons: [
+                { text: "保存", iconCls: "icon-save", handler: function () {
+                    var url;
+                    if (SMKJ_FM.Users.Detail.ID.val() == null || SMKJ_FM.Users.Detail.ID.val()=="") {
+                        url = SMKJ_FM.Users.InsertUrl;
+                    }
+                    else {
+                        url = SMKJ_FM.Users.UpdateUrl;
+                    }
+                    SMKJ_FM.Users.Detail.Form.form("submit", {
+                        url: url,
+                        queryParams: Tools.serializeObject(SMKJ_FM.Users.Detail.Form),
+                        success: function (data) {
+                            var msg = eval("(" + data + ")");
+                            if (msg.Success) {
+                                $.messager.show({
+                                    title: "提示",
+                                    msg: msg.Msg,
+                                    timeout: 3000,
+                                    showtype: "show"
+                                });
+                                SMKJ_FM.Users.Detail.Dialog.dialog("close");
+                                SMKJ_FM.Users.Result.Datagrid.datagrid("reload",
+                                { queryParams: Tools.serializeObject(SMKJ_FM.Users.Search.Form) });
+                            }
+                            else {
+                                $.messager.alert("错误", msg.Msg, "error");
+                            }
+                        }
+                    })
+                }
+                },
+                { text: "取消", iconCls: "icon-cancel", handler: function () {
+                    SMKJ_FM.Users.Detail.Dialog.dialog("close");
+                }
+                }
+            ]
+        });
+
+        SMKJ_FM.Users.Detail.Form = $("#Users_Detail_Form").form();
+        SMKJ_FM.Users.Detail.ID = $("#Users_Detail_ID");
+        SMKJ_FM.Users.Detail.UserCode = $("#Users_Detail_UserCode").validatebox({
+            required: true,
+            missingMessage: "用户编码必须填写!"
+        });
+        SMKJ_FM.Users.Detail.UserName = $("#Users_Detail_UserName").validatebox({
+            required: true,
+            missingMessage: "用户名称必须填写!"
+        });
+
+        SMKJ_FM.Users.Detail.OrgCode = $("#Users_Detail_OrgCode").combotree({
+            url: SMKJ_FM.Get.Org,
+            required: true
+        });
+
+        SMKJ_FM.Users.Detail.RoleCode = $("#Users_Detail_RoleCode").combogrid({
+            url: SMKJ_FM.Get.Role,
+            required: true,
+            editable:false,
+            panelWidth: 310,
+            idField: "RoleCode",
+            textField: "RoleName",
+            columns: [[
+                { field: "RoleCode", title: "角色编码", width: 150 },
+                { field: "RoleName", title: "角色名称", width: 150 }
+            ]]
+        });
+
+        SMKJ_FM.Users.Detail.Status = $("#Users_Detail_Status").combobox({
+            required: true,
+            multiple: false,
+            editable: false,
+            value: 0,
+            url: SMKJ_FM.Get.Status,
+            valueField: "ID",
+            textField: "Text"
+        });
+    });
+</script>
+}
+
+@section Components{
+<div id="Users_Detail_Dialog" style="display:none">
+<form id="Users_Detail_Form" method="post">
+    <input  id="Users_Detail_ID" name="ID" style="display:none"/>
+    <table>
+        <tr>
+            <th>用户编码</th>
+            <td><input id="Users_Detail_UserCode" name="UserCode"/></td>
+        </tr>
+        <tr>
+            <th>用户名称</th>
+            <td><input id="Users_Detail_UserName" name="UserName"/></td>
+        </tr>
+        <tr>
+            <th>组织</th>
+            <td><input id="Users_Detail_OrgCode" name="OrgCode" /></td>
+        </tr>
+        <tr>
+            <th>角色</th>
+            <td><input id="Users_Detail_RoleCode" name="RoleCode"/></td>
+        </tr>
+        <tr>
+            <th>状态</th>
+            <td><input id="Users_Detail_Status" name="Status" />
+            </td>
+        </tr>
+    </table>
+</form>
+</div>
+}
+
+@section SearchParams{
+<form id="Users_Search_Form" method="post">
+<table>
+    <tr>
+        <td>用户编码<input id="Users_Search_UserCode" name="UserCode"/></td>
+
+        <td>用户名称<input id="Users_Search_UserName" name="UserName"/></td>
+
+        <td>角色<input id="Users_Search_Role" name="RoleCode"/></td>
+
+        <td>组织<input id="Users_Search_Org" name="OrgCode"/></td>
+    </tr>
+    <tr>
+        <td><input id="Users_Search_HasDateParam" type="checkbox" >修改时间<input id="Users_Search_XgDateBegin" name="XgDateBegin"/>-</td>
+        <td><input id="Users_Search_XgDateEnd" name="XgDateEnd"/></td>
+        <td>状态<input id="Users_Search_Status" name="Status" />
+        </td>
+        <td><a id="Users_Search_SearchBtn" href="javascript:void(0)">查询</a ><a id="Users_Search_CleanBtn" href="javascript:void(0)">清空</a></td>
+    </tr>
+</table>
+</form>
+}
+
+@section SearchResult{
+<table id="Users_Result_Datagrid"></table>
+}

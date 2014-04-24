@@ -1,0 +1,204 @@
+﻿@{
+    ViewBag.Title = "WorkComputer";
+    Layout = "~/Views/Shared/_TabLayout.cshtml";
+}
+@section JS{
+@*变量声明*@
+<script>
+    Tools.Namespace.register("SMKJ_FM.WorkComputer.Search");
+    Tools.Namespace.register("SMKJ_FM.WorkComputer.Detail");
+    Tools.Namespace.register("SMKJ_FM.WorkComputer.Result");
+    SMKJ_FM.WorkComputer.SelectURL = "/WorkComputer/Select";
+    SMKJ_FM.WorkComputer.UpdateURL = "/WorkComputer/Update";
+    SMKJ_FM.WorkComputer.DeleteURL = "/WorkComputer/Delete";
+    SMKJ_FM.WorkComputer.InsertURL = "/WorkComputer/Insert";
+</script>
+
+@*查询选项*@
+<script>
+    $(function () {
+        SMKJ_FM.WorkComputer.Search.Form = $("#WorkComputer_Search_Form").form();
+        SMKJ_FM.WorkComputer.Search.WorkComputerName = $("#WorkComputer_Search_WorkComputerName");
+        SMKJ_FM.WorkComputer.Search.ComputerIP = $("#WorkComputer_Search_ComputerIP");
+        SMKJ_FM.WorkComputer.Search.SearchBtn = $("#WorkComputer_Search_SearchBtn").linkbutton({
+            iconCls: "icon-search"
+        });
+        SMKJ_FM.WorkComputer.Search.SearchBtn.click(function () {
+            SMKJ_FM.WorkComputer.Result.Datagrid.datagrid({
+                queryParams: Tools.serializeObject(SMKJ_FM.WorkComputer.Search.Form)
+            });
+        });
+
+        SMKJ_FM.WorkComputer.Search.CleanBtn = $("#WorkComputer_CleanBtn").linkbutton({
+            iconCls: "icon-cancel"
+        });
+        SMKJ_FM.WorkComputer.Search.CleanBtn.click(function () {
+            SMKJ_FM.WorkComputer.Search.Form.form("clear");
+        });
+    })
+</script>
+
+@*查询结果*@
+<script>
+    $(function () {
+        SMKJ_FM.WorkComputer.Result.Datagrid = $("#WorkComputer_Result_Datagrid").datagrid({
+            url: SMKJ_FM.WorkComputer.SelectURL,
+            method: "post",
+            fit: true,
+            collapsible: true,
+            fitColumns: true,
+            queryParams: Tools.serializeObject(SMKJ_FM.WorkComputer.Search.Form),
+            singleSelect: true,
+            rownumbers: true,
+            pagination: true,
+            pageSize: 20,
+            idField: "ID",
+            pageList: [10, 20, 50, 100],
+            columns: [[
+                { field: "WorkComputerName", title: "工控机名称", width: 100 },
+                { field: "ComputerIP", title: "IP地址", width: 100 },
+                { field: "HardwareConfig", title: "配置信息", width: 100 },
+                { field: "CreateDate", title: "创建时间", width: 100 }
+            ]],
+            toolbar: [
+                { text: "增加", iconCls: "icon-add", handler: function () {
+                    SMKJ_FM.WorkComputer.Detail.Dialog.dialog({ closed: false });
+                }
+                },
+                { text: "删除", iconCls: "icon-remove", handler: function () {
+                    var node = SMKJ_FM.WorkComputer.Result.Datagrid.datagrid("getSelected");
+                    if (node != null) {
+                        $.messager.confirm("提示", "确认删除该工控机?", function (r) {
+                            if (r) {
+                                $.post(SMKJ_FM.WorkComputer.DeleteURL, {ID:node.ID},function(data){
+                                    var msg=eval("("+data+")");
+                                    if(msg.Success){
+                                        $.messager.show({
+                                             title:"提示",
+                                            msg:"用户删除成功!",
+                                            timeout:3000,
+                                            showtype:"show"
+                                        });
+                                    }
+                                    else{
+                                        $.messager.alert("错误",msg.Msg,"error");
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }
+                },
+                { text: "修改", iconCls: "icon-edit", handler: function () {
+                     var node = SMKJ_FM.WorkComputer.Result.Datagrid.datagrid("getSelected");
+                     if(node!=null){
+                        SMKJ_FM.WorkComputer.Detail.Dialog.dialog({ closed: false });
+                        SMKJ_FM.WorkComputer.Detail.Form.form("load",node);
+                    }
+                }
+                }
+            ]
+        });
+    });
+</script>
+
+@*明细对话框*@
+<script>
+    $(function () {
+        SMKJ_FM.WorkComputer.Detail.Dialog = $("#WorkComputer_Detail_Dialog").show().dialog({
+            title: "工控机信息",
+            width: 300,
+            height: 250,
+            closed: true,
+            modal: true,
+            onBeforeOpen: function () {
+                SMKJ_FM.WorkComputer.Detail.Form.form("clear");
+            },
+            buttons: [
+                { text: "保存", iconCls: "icon-save", handler: function () {
+                    var url;
+                    if (SMKJ_FM.WorkComputer.Detail.ID.val() == null || SMKJ_FM.WorkComputer.Detail.ID.val() == "") {
+                        url = SMKJ_FM.WorkComputer.InsertURL;
+                    }
+                    else {
+                        url = SMKJ_FM.WorkComputer.UpdateURL;
+                    }
+                    SMKJ_FM.WorkComputer.Detail.Form.form("submit", {
+                        url: url,
+                        success: function (data) {
+                            var msg = eval("(" + data + ")");
+                            if (msg.Success) {
+                                $.messager.show({
+                                    title: "提示",
+                                    msg: msg.Msg,
+                                    timeout: 3000,
+                                    showtype: "show"
+                                });
+                                SMKJ_FM.WorkComputer.Detail.Dialog.dialog({ closed: true });
+                            }
+                            else {
+                                $.messager.alert("错误", msg.Msg, "error");
+                            }
+                        }
+                    });
+                }
+                },
+                { text: "关闭", iconCls: "icon-no", handler: function () {
+                    SMKJ_FM.WorkComputer.Detail.Dialog.dialog({ closed: true });
+                }
+                }
+            ]
+        });
+
+        SMKJ_FM.WorkComputer.Detail.Form = $("#WorkComputer_Detail_Form").form();
+        SMKJ_FM.WorkComputer.Detail.ID = $("#WorkComputer_Detail_ID");
+        SMKJ_FM.WorkComputer.Detail.WorkComputerName = $("#WorkComputer_Detail_WorkComputerName").validatebox({
+            required:true,
+            missingMessage:"工控机名称必须填写!"
+        });
+        SMKJ_FM.WorkComputer.Detail.ComputerIP = $("#WorkComputer_Detail_ComputerIP");
+        SMKJ_FM.WorkComputer.Detail.HardwareConfig = $("#WorkComputer_Detail_HardwareConfig");
+    });
+</script>
+}
+
+@section Components{
+<div id="WorkComputer_Detail_Dialog" style="display:none">
+    <form id="WorkComputer_Detail_Form" method="post" >
+        <input  id="WorkComputer_Detail_ID" name="ID" style="display:none"/>
+        <table>
+        <tr>
+            <th>计算机名称</th>
+            <td><input id="WorkComputer_Detail_WorkComputerName" name="WorkComputerName"/></td>
+        </tr>
+        <tr>
+            <th>计算机IP</th>
+            <td><input id="WorkComputer_Detail_ComputerIP" name="ComputerIP"/></td>
+        </tr>
+        <tr>
+            <th>配置信息</th>
+            <td><input id="WorkComputer_Detail_HardwareConfig" name="HardwareConfig"/></td>
+        </tr>
+    </table>
+    </form>
+
+</div>
+}
+
+@section SearchParams{
+<form method="post" id="WorkComputer_Search_Form">
+    <table>
+        <tr>
+            <th>计算机名称</th>
+            <td><input id="WorkComputer_Search_WorkComputerName" name="WorkComputerName"/></td>
+            <th>计算机IP</th>
+            <td><input id="WorkComputer_Search_ComputerIP" name="ComputerIP"/></td>
+            <td><a id="WorkComputer_Search_SearchBtn">查询</a><a id="WorkComputer_CleanBtn">清空</a></td>
+        </tr>
+    </table>
+</form>
+}
+
+@section SearchResult{
+<table id="WorkComputer_Result_Datagrid"></table>
+}

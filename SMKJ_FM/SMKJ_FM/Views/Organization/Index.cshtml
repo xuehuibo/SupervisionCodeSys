@@ -1,0 +1,411 @@
+﻿@{
+    ViewBag.Title = "Organization"; 
+    Layout = "~/Views/Shared/_TabLayout.cshtml";
+}
+
+@section JS{
+    @*声明变量*@
+    <script>
+        Tools.Namespace.register("SMKJ_FM.Org.Search");
+        Tools.Namespace.register("SMKJ_FM.Org.Result");
+        Tools.Namespace.register("SMKJ_FM.Org.Detail");
+        SMKJ_FM.Org.SelectUrl = "/Organization/Select";
+        SMKJ_FM.Org.UpdateUrl = "/Organization/Update";
+        SMKJ_FM.Org.InsertUrl = "/Organization/Insert";
+        SMKJ_FM.Org.DeleteUrl = "/Organization/Delete";
+    </script>
+
+    @*初始化组件*@
+    @*查询条件*@
+    <script>
+    $(function(){
+
+             SMKJ_FM.Org.Search.Form= $("#Org_Search_Form").form();
+            SMKJ_FM.Org.Search.OrgCode = $("#Org_Search_OrgCode");
+
+            SMKJ_FM.Org.Search.OrgName = $("#Org_Search_OrgName");
+
+            SMKJ_FM.Org.Search.OrgType = $("#Org_Search_OrgType").combobox({
+                multiple: true,
+                required:false,
+                editable: false,
+                url:SMKJ_FM.Get.OrgType,
+                valueField:"ID",
+                textField:"Text"
+            });
+
+           SMKJ_FM.Org.Search.Status = $("#Org_Search_Status").combobox({
+                multiple: true,
+                required:false,
+                editable: false,
+                url:SMKJ_FM.Get.Status,
+                valueField:"ID",
+                textField:"Text"
+            });
+
+            SMKJ_FM.Org.Search.HasDateParam = $("#Org_Search_HasDateParam");
+            SMKJ_FM.Org.Search.HasDateParam.click(function(){
+                  var hasDateParam = SMKJ_FM.Org.Search.HasDateParam.attr("checked");
+                  if (hasDateParam == undefined) {
+                    SMKJ_FM.Org.Search.XgDateBegin.datetimebox("clear");
+                    SMKJ_FM.Org.Search.XgDateEnd.datetimebox("clear");
+                 }
+            });
+            SMKJ_FM.Org.Search.XgDateBegin = $("#Org_Search_XgDateBegin").datetimebox({
+                editable:false,
+                required:false
+            });
+            SMKJ_FM.Org.Search.XgDateEnd = $("#Org_Search_XgDateEnd").datetimebox({
+                editable:false,
+                required:false
+            });
+            SMKJ_FM.Org.Search.SearchBtn=$("#Org_Search_SearchBtn").linkbutton({
+                iconCls:"icon-search"
+            });
+            SMKJ_FM.Org.Search.SearchBtn.click(function(){
+                     SMKJ_FM.Org.Result.Treegrid.treegrid({
+                        queryParams: Tools.serializeObject(SMKJ_FM.Org.Search.Form)
+                     });
+            });
+                                  
+
+            SMKJ_FM.Org.Search.CleanBtn=$("#Org_Search_CleanBtn").linkbutton({
+                iconCls:"icon-cancel"
+            });
+            SMKJ_FM.Org.Search.CleanBtn.click(function(){
+                 SMKJ_FM.Org.Search.Form.form("clear");
+            });
+            });
+    </script>
+
+    @*明细对话框*@
+    <script>
+        $(function () {
+
+            @*初始化Org详细信息框中 组织编码规则*@
+            $.extend($.fn.validatebox.defaults.rules, {
+                childCodeRule: {
+                    validator: function (value, param) {
+                        @*param是value的前缀*@
+                        var p = $(param[0]).combotree("getValue");
+                        return value.substring(0, p.length) == p && value.length == p.length + 2;
+                    },
+                    message: "子级编码规则:以父级编码为前缀再加设两位编码.如:父码01 子码0101"
+                }
+            });
+
+             @*初始化Org详细信息Form*@
+            SMKJ_FM.Org.Detail.Form = $("#Org_Detail_Form").form({
+            });
+
+            SMKJ_FM.Org.Detail.ID = $("#Org_Detail_ID");
+            SMKJ_FM.Org.Detail.ParentTr = $("#Org_Detail_ParentTr");
+
+            @*初始化Org详细信息框中组织编码框　父级组织编码　组织名称*@
+            SMKJ_FM.Org.Detail.ParentOrg = $("#Org_Detail_ParentOrg").combotree({
+                        url: SMKJ_FM.Get.Org 
+            });
+            SMKJ_FM.Org.Detail.ClearBtn = $("#Org_Detail_ClearBtn").linkbutton();
+            SMKJ_FM.Org.Detail.OrgCode = $("#Org_Detail_OrgCode").validatebox({
+                required: true,
+                missingMessage: "组织编码必须填写!"
+            });
+
+            SMKJ_FM.Org.Detail.OrgName = $("#Org_Detail_OrgName").validatebox({
+                required: true,
+                missingMessage: "组织名称必须填写!"
+            });
+
+            @*初始化Org详细信息框中OrgType选择框*@
+            SMKJ_FM.Org.Detail.OrgType = $("#Org_Detail_OrgType").combobox({
+                required: true,
+                multiple: false,
+                editable: false,
+                url:SMKJ_FM.Get.OrgType,
+                valueField:"ID",
+                textField:"Text"
+            });
+          
+
+
+            @*初始化Org详细对话框Status选择*@
+            SMKJ_FM.Org.Detail.Status = $("#Org_Detail_Status").combobox({
+                required: true,
+                multiple: false,
+                editable: false,
+                url:SMKJ_FM.Get.Status,
+                valueField:"ID",
+                textField:"Text"
+            });
+
+
+            @*初始化Org详细信息对话框*@
+            SMKJ_FM.Org.Detail.Dialog = $("#Org_Detail_Dialog").show().dialog({
+                width: 400,
+                height: 350,
+                closed: true,
+                modal: true,
+                onBeforeOpen:function(){
+                    SMKJ_FM.Org.Detail.Form.form("clear");
+                },
+                buttons: [
+                    {
+                        text: "保存",
+                        iconCls: "icon-save",
+                        handler: function () {
+
+                            var id = SMKJ_FM.Org.Detail.ID.val();
+                            var url;
+                            if (id == null || id == "") {
+                                url = SMKJ_FM.Org.InsertUrl;
+                            }
+                            else {
+                                url = SMKJ_FM.Org.UpdateUrl;
+                            }
+                            SMKJ_FM.Org.Detail.Form.form("submit", {
+                                url: url,
+                                success: function (data) {
+                                    var msg = eval("(" + data + ")")
+                                    if (msg.Success == true) {
+                                        SMKJ_FM.Org.Detail.Dialog.dialog("close");
+                                        SMKJ_FM.Org.Result.Treegrid.treegrid({
+                                            queryParams:
+                                                Tools.serializeObject(SMKJ_FM.Org.Search.Form)
+                                        });
+                                        $.messager.show({
+                                            title: "提示",
+                                            msg: msg.Msg,
+                                            timeout: 3000,
+                                            showtype: "show"
+                                        });
+                                    }
+                                    else {
+                                        $.messager.alert("错误", msg.Msg, "error");
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    {
+                        text: "取消",
+                        iconCls: "icon-no",
+                        handler: function () {
+                            SMKJ_FM.Org.Detail.Dialog.dialog("close");
+                        }
+                    }
+                ]
+            });
+
+
+
+        });
+    </script>
+
+    @*查询结果*@
+    <script>
+        $(function () {
+         @*初始化表格*@
+            SMKJ_FM.Org.Result.Treegrid = $("#Org_Result_Treegrid").treegrid({
+                url: SMKJ_FM.Org.SelectUrl,
+                method: "post",
+                fit: true,
+                collapsible: true,
+                animate: true,
+                frozenColumns: [[
+                     { field: "ID", title: "ID", width: 100, hidden: true },
+                    { field: "OrgCode", title: "组织代码", width: 100 }
+                    ]],
+                columns: [[{ title: "组织信息", colspan: 4}], [
+                    { field: "OrgName", title: "组织名称", width: 100 },
+                    { field: "OrgTypeE", title: "组织类型", width: 100 },
+                    { field: "Status", title: "状态", width: 100,
+                        formatter: function (value, row, index) {
+                            if (row.StatusStr) {
+                                return row.StatusStr;
+                            }
+                        }
+                    },
+                    { field: "XgDate", title: "修改时间", width: 100 }
+                ]],
+                queryParams: Tools.serializeObject(SMKJ_FM.Org.Search.Form),
+                selectOnCheck: false,
+                idField: "ID",
+                treeField: "OrgCode",
+                pageSize: 20,
+                pageList: [10, 20, 50, 100],
+                fitColumns: true,
+                autoRowHeight: true,
+                pagination: true,
+                rownumbers: true,
+                toolbar: [
+                    "-",
+                    { iconCls: "icon-add",
+                        text: "增加",
+                        handler: function () {
+                            $("#Org_Detail_ParentTr").show();
+                            var node = SMKJ_FM.Org.Result.Treegrid.treegrid("getSelected");
+                            if (node != null) {
+                                SMKJ_FM.Org.Detail.ParentOrg.combotree("setValue", node.id).combotree("setText", node.text);
+                            }
+                            SMKJ_FM.Org.Detail.OrgCode.attr("readonly", false);
+                            SMKJ_FM.Org.Detail.Dialog.dialog({
+                                title: "增加",
+                                iconCls: "icon-add",
+                                closed: false
+                            });
+                        }
+                    },
+                    "-",
+                    { iconCls: "icon-remove",
+                        text: "删除",
+                        handler: function () {
+                            var node = SMKJ_FM.Org.Result.Treegrid.treegrid("getSelected");
+                          
+                            if (node != null) {
+                              if (node.OrgCode == "SYS") {
+                                $.messager.alert("提示", "系统组织SYS不允许删除", "info");
+                                return;
+                              }
+                                $.messager.confirm("提示", "确认删除该组织?", function (r) {
+                                    if (r) {
+                                        $.post(SMKJ_FM.Org.DeleteUrl, { ID: node.ID }, function (data) {
+                                            var msg = eval("(" + data + ")");
+                                            if (msg.Success == true) {
+                                                $.messager.show({
+                                                    title: "提示",
+                                                    msg: msg.Msg,
+                                                    timeout: 3000,
+                                                    showtype: "show"
+                                                });
+                                                SMKJ_FM.Org.Result.Treegrid.treegrid({
+                                                    queryParams: Tools.serializeObject(SMKJ_FM.Org.Detail.Form)
+                                                });
+                                            }
+                                            else {
+                                                $.messager.alert("错误", msg.Msg, "error");
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+
+                        }
+                    },
+                    "-",
+                    { iconCls: "icon-edit",
+                        text: "编辑",
+                        handler: function () {
+                            SMKJ_FM.Org.Detail.ParentTr.hide();
+                            var node = SMKJ_FM.Org.Result.Treegrid.treegrid("getSelected");
+                            if (node != null) {
+                                if (node.OrgCode == "SYS") {
+                                    $.messager.alert("提示", "系统组织SYS不允许修改!", "warning");
+                                }
+                                else {
+                                   SMKJ_FM.Org.Detail.Dialog.dialog({
+                                        title: "编辑",
+                                        iconCls: "icon-edit",
+                                        closed: false
+                                    });
+                                   SMKJ_FM.Org.Detail.ID.val(node.ID);
+                                    SMKJ_FM.Org.Detail.OrgCode.val(node.OrgCode);
+                                    var pCode = node.OrgCode.substring(0, node.OrgCode.length - 2);
+
+                                    SMKJ_FM.Org.Detail.ParentOrg.combotree("setValue", pCode);
+                                    SMKJ_FM.Org.Detail.OrgCode.attr("readonly", true);
+                                    SMKJ_FM.Org.Detail.OrgName.val(node.OrgName);
+                                    SMKJ_FM.Org.Detail.OrgType.combobox("setValue", node.OrgType);
+                                  
+                                    SMKJ_FM.Org.Detail.Status.combobox("setValue", node.Status);
+
+
+                                }
+                            }
+                        }
+
+                    }
+                ],
+                onDblClickRow: function (row) {
+                    SMKJ_FM.Org.Result.Treegrid.treegrid("toggle", row.ID);
+                }
+            });
+        });
+    </script>
+}
+
+@section Components{
+@*组件*@
+<div id="Org_Detail_Dialog" style="display:none">
+        <form id="Org_Detail_Form" method="post">
+            <input id="Org_Detail_ID"  name="ID" type="text" style="display:none"/>
+
+            <table>
+                <tr id="Org_Detail_ParentTr">
+
+                        <th>父级组织</th>
+                        <td><input id="Org_Detail_ParentOrg"  /> </td>
+                        <td><a id="Org_Detail_ClearBtn" class="easyui-linkbutton" href="javascript:void(0)" onclick="Org_Detail_ParentOrg.combotree('setValue','').combotree('setText','');">清除</a></td>
+
+                </tr>
+                <tr>
+                    <th>组织编码</th>
+                    <td><input   id="Org_Detail_OrgCode" name="OrgCode" validtype="childCodeRule['#Org_Detail_ParentOrg']"/></td>
+                </tr>
+                <tr>
+                    <th>组织名称</th>
+                    <td><input id="Org_Detail_OrgName" name="OrgName"/></td>
+                </tr>
+                <tr>
+                    <th>组织类别</th>
+                    <td>
+                        <input id="Org_Detail_OrgType" name="OrgType" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>初始状态</th>
+                    <td>
+                        <input id="Org_Detail_Status"  name="Status" />
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+}
+
+@section SearchParams{
+ @*查询条件*@
+<form id="Org_Search_Form" method="post">
+<table>
+    <tr>
+        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;组织代码&nbsp;&nbsp;
+        <input id="Org_Search_OrgCode"  name="OrgCode" type="text" style="width:130px" /></td>
+        <td>组织名称&nbsp;&nbsp;<input id="Org_Search_OrgName" name="OrgName" type="text" style="width:130px"/></td>
+        <td>组织类型&nbsp;&nbsp;
+        <input id="Org_Search_OrgType" name="OrgType" />
+        </td>
+        <td>状态&nbsp&nbsp
+            <select id="Org_Search_Status" name="Status"></select>                  
+        </td>
+    </tr>
+    <tr>
+        <td><input id="Org_Search_HasDateParam"  type="checkbox" >修改时间&nbsp;&nbsp;
+                <input id="Org_Search_XgDateBegin" name="XgDateBegin" style="width:140px" type="text" class="easyui-datetimebox" />&nbsp;&nbsp;-&nbsp;</td>
+        <td><input id="Org_Search_XgDateEnd" name="XgDateEnd" style="width:140px" type="text" class="easyui-datetimebox" /></td>
+        <td></td>
+        <td align="left">
+            <a id="Org_Search_SearchBtn"  href="javascript:void(0)">查询</a>
+            <a  id="Org_Search_CleanBtn" href="javascript:void(0)">清空</a>
+        </td>
+    </tr>
+</table>
+</form>
+
+}
+
+@section SearchResult{
+@*  查询结果*@
+<table id="Org_Result_Treegrid"  style="overflow:scroll">
+</table>
+}
+
+

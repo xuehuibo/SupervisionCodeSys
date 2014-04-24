@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<productList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" version="3.0">
+  <product productCode="1005262" productName="卡托普利片" comment="">
+    <subType typeNo="1005262001" authorizedNo="国药准字H37022173" type="片剂" spec="12.5mg" packageSpec="瓶100片" packUnit="瓶" physicDetailType="10">
+      <resProdCodes>
+        <resCode codeVersion="88" codeLevel="3" pkgRatio="1:2:4">18062</resCode>
+        <resCode codeVersion="88" codeLevel="2" pkgRatio="1:2:4">18063</resCode>
+        <resCode codeVersion="81" codeLevel="1" pkgRatio="1:2:4">19370</resCode>
+      </resProdCodes>
+    </subType>
+  </product>
+  <product productCode="1005262" productName="卡托普利片" comment="">
+    <subType typeNo="1005262002" authorizedNo="国药准字H37022172" type="片剂" spec="25mg" packageSpec="瓶100片" packUnit="瓶" physicDetailType="10">
+      <resProdCodes>
+        <resCode codeVersion="88" codeLevel="3" pkgRatio="1:20:200">18064</resCode>
+        <resCode codeVersion="88" codeLevel="2" pkgRatio="1:20:200">18065</resCode>
+        <resCode codeVersion="81" codeLevel="1" pkgRatio="1:20:200">19371</resCode>
+      </resProdCodes>
+    </subType>
+  </product>
+</productList>

@@ -1,0 +1,20 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>@ViewBag.Title</title>
+        <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+        <meta name="viewport" content="width=device-width" />
+        @Scripts.Render("~/bundles/easyui")
+        @Scripts.Render("~/bundles/easyui/locale")
+        @Styles.Render("~/bundles/easyui/css")
+        @Scripts.Render("~/bundles/tools")
+        @Scripts.Render("~/bundles/MyJs")
+        @Scripts.Render("~/bundles/uploadifyJs")
+        @Styles.Render("~/bundles/uploadifyCss")
+
+    </head>
+    <body style=" background-color:White; border-top-width:0px">
+        @RenderBody()
+    </body>
+</html>

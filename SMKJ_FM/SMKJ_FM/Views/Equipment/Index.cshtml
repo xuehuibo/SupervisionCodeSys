@@ -1,0 +1,284 @@
+﻿@{
+    ViewBag.Title = "Equipment";
+    Layout = "~/Views/Shared/_TabLayout.cshtml";
+}
+@section JS{
+@*变量声明*@
+<script>
+    Tools.Namespace.register("SMKJ_FM.Equipment.Search");
+    Tools.Namespace.register("SMKJ_FM.Equipment.Result");
+    Tools.Namespace.register("SMKJ_FM.Equipment.Detail");
+    SMKJ_FM.Equipment.SelectUrl = "/Equipment/Select";
+    SMKJ_FM.Equipment.InsertUrl = "/Equipment/Insert";
+    SMKJ_FM.Equipment.UpdateUrl = "/Equipment/Update";
+    SMKJ_FM.Equipment.DeleteUrl = "/Equipment/Delete";
+</script>
+
+@*初始化组件*@
+@*查询参数*@
+<script>
+    $(function () {
+        SMKJ_FM.Equipment.Search.Form = $("#Equipment_Search_Form").form();
+        SMKJ_FM.Equipment.Search.EquipmentCode = $("#Equipment_Search_EquipmentCode");
+        SMKJ_FM.Equipment.Search.EquipmentSetting = $("#Equipment_Search_EquipmentSettingID").combogrid({
+            url: SMKJ_FM.Get.EquipmentSetting,
+            required: false,
+            editable: false,
+            panelWidth: 480,
+            idField: "ID",
+            textField: "Name",
+            columns: [[
+                { field: "Name", title: "设备名称", width: 150 },
+                { field: "CategoryStr", title: "设备类型", width: 100 },
+                { field: "InOutTypeStr", title: "输入输出类型", width: 100 },
+                { field: "DriverTypeStr", title: "端口类型", width: 100 }
+            ]]
+        });
+        SMKJ_FM.Equipment.Search.SearchBtn = $("#Equipment_Search_SearchBtn").linkbutton({
+            iconCls: "icon-search"
+        });
+        SMKJ_FM.Equipment.Search.SearchBtn.click(function () {
+            SMKJ_FM.Equipment.Result.Datagrid.datagrid({ queryParams: Tools.serializeObject(SMKJ_FM.Equipment.Search.Form) });
+        });
+        SMKJ_FM.Equipment.Search.CleanBtn = $("#Equipment_Search_CleanBtn").linkbutton({
+            iconCls: "icon-cancel"
+        });
+        SMKJ_FM.Equipment.Search.CleanBtn.click(function () {
+            SMKJ_FM.Equipment.Search.Form.form("clear");
+        });
+    });
+</script>
+
+@*查询结果*@
+<script>
+    $(function () {
+        SMKJ_FM.Equipment.Result.Datagrid = $("#Equipment_Result_Datagrid").datagrid({
+            url: SMKJ_FM.Equipment.SelectUrl,
+            fit: true,
+            queryParams: Tools.serializeObject(SMKJ_FM.Equipment.Search.Form),
+            method: "post",
+            fitColumns: true,
+            idField: "ID",
+            rownumber: true,
+            pagination: true,
+            singleSelect: true,
+            pageSize: 20,
+            pageList: [10, 20, 50, 100],
+            columns: [[
+                { field: "ID", title: "ID", hidden: true, width: 100, rowspan: 2 },
+                { field: "EquipmentCode", title: "设备编码", width: 150, rowspan: 2 },
+                { title: "设备信息", colspan: 3 }, { field: "Remark", title: "备注", width: 200, rowspan: 2}],
+                [
+                { field: "Setting.CategoryStr", title: "设备名称", width: 100 },
+                { field: "Setting.InOutTypeStr", title: "输入输出类型", width: 100 },
+                { field: "Setting.DriverTypeStr", title: "驱动类型", width: 100 }
+            ]],
+            toolbar: [
+                "-",
+                { text: "增加", iconCls: "icon-add", handler: function () {
+                    SMKJ_FM.Equipment.Detail.Dialog.dialog({ closed: false });
+                }
+                },
+                "-",
+                { text: "删除", iconCls: "icon-remove", handler: function () {
+                    var node = SMKJ_FM.Equipment.Result.Datagrid.datagrid("getSelected");
+                    if (node == null) {
+                        return;
+                    }
+                    $.messager.confirm("提示", "确认删除该设备?", function (r) {
+                        if (r) {
+                            $.post(SMKJ_FM.Equipment.DeleteUrl, { ID: node.ID }, function (data) {
+                                var msg = eval("(" + data + ")");
+                                if (msg.Success) {
+                                    $.messager.show({
+                                        title: "提示",
+                                        msg: msg.Msg,
+                                        timeout: 3000,
+                                        showtype: "show"
+                                    });
+                                }
+                                else {
+                                    $.messager.alert("错误", msg.Msg, "error");
+                                }
+                            })
+                        }
+                    });
+                }
+                },
+                "-",
+                { text: "编辑", iconCls: "icon-edit", handler: function () {
+                    var node = SMKJ_FM.Equipment.Result.Datagrid.datagrid("getSelected");
+                    if (node == null) {
+                        return;
+                    }
+                    SMKJ_FM.Equipment.Detail.Dialog.dialog({ closed: false });
+                    SMKJ_FM.Equipment.Detail.Form.form("load", node);
+                    SMKJ_FM.Equipment.Detail.EquipmentSetting.combogrid("setValue", node.Setting.ID);
+                }
+                }
+            ]
+        });
+    });
+</script>
+
+@*明细对话框*@
+<script>
+    $(function () {
+        SMKJ_FM.Equipment.Detail.Dialog = $("#Equipment_Detail_Dialog").show().dialog({
+            title: "设备明细",
+            width: 300,
+            height: 400,
+            modal: true,
+            closed: true,
+            onBeforeOpen: function () {
+                SMKJ_FM.Equipment.Detail.Form.form("clear");
+            },
+            buttons: [
+                { text: "保存", iconCls: "icon-save", handler: function () {
+                    var url;
+                    if (SMKJ_FM.Equipment.Detail.ID.val() == null || SMKJ_FM.Equipment.Detail.ID.val() == "") {
+                        url = SMKJ_FM.Equipment.InsertUrl;
+                    }
+                    else {
+                        url = SMKJ_FM.Equipment.UpdateUrl;
+                    }
+                    SMKJ_FM.Equipment.Detail.Form.form("submit", {
+                        url: url,
+                        success: function (data) {
+                            var msg = eval("(" + data + ")");
+                            if (msg.Success) {
+                                SMKJ_FM.Equipment.Detail.Dialog.dialog("close");
+                                $.messager.show({
+                                    title: "提示",
+                                    msg: msg.Msg,
+                                    timeout: 3000,
+                                    showtype: "show"
+                                });
+                            }
+                            else {
+                                $.messager.alert("错误", msg.Msg, "error");
+                            }
+                        }
+                    });
+                }
+                },
+                { text: "关闭", iconCls: "icon-no" }
+            ]
+        });
+        SMKJ_FM.Equipment.Detail.Form = $("#Equipment_Detail_Form").form();
+        SMKJ_FM.Equipment.Detail.ID = $("#Equipment_Detail_ID");
+        SMKJ_FM.Equipment.Detail.EquipmentCode = $("#Equipment_Detail_EquipmentCode").validatebox({
+            required: true,
+            missingMessage: "设备编码必须填写!"
+        });
+        SMKJ_FM.Equipment.Detail.IP = $("#Equipment_Detail_IP");
+        SMKJ_FM.Equipment.Detail.Port = $("#Equipment_Detail_Port");
+        SMKJ_FM.Equipment.Detail.BaudRate = $("#Equipment_Detail_BaudRate");
+        SMKJ_FM.Equipment.Detail.DataBits = $("#Equipment_Detail_DataBits");
+        SMKJ_FM.Equipment.Detail.StopBits = $("#Equipment_Detail_StopBits").combobox({
+            required: true,
+            multiple: false,
+            editable: false,
+            value: 1,
+            url: SMKJ_FM.Get.StopBitsEnum,
+            valueField: "ID",
+            textField: "Text"
+        });
+        SMKJ_FM.Equipment.Detail.Parity = $("#Equipment_Detail_Parity").combobox({
+            required: true,
+            multiple: false,
+            editable:false,
+            value:0,
+            url: SMKJ_FM.Get.ParityEnum,
+            valueField: "ID",
+            textField: "Text"
+        });
+        SMKJ_FM.Equipment.Detail.PropertyObj = $("#Equipment_Detail_PropertyObj");
+        SMKJ_FM.Equipment.Detail.Remark = $("#Equipment_Detail_Remark");
+        SMKJ_FM.Equipment.Detail.EquipmentSetting = $("#Equipment_Detail_EquipmentSettingID").combogrid({
+            url: SMKJ_FM.Get.EquipmentSetting,
+            required: true,
+            editable: false,
+            panelWidth: 480,
+            idField: "ID",
+            textField: "Name",
+            columns: [[
+                { field: "Name", title: "设备名称", width: 150 },
+                { field: "CategoryStr", title: "设备类型", width: 100 },
+                { field: "InOutTypeStr", title: "输入输出类型", width: 100 },
+                { field: "DriverTypeStr", title: "端口类型", width: 100 }
+            ]]
+        });
+
+
+    });
+</script>
+}
+
+@section Components{
+<div id="Equipment_Detail_Dialog" style="display:none">
+    <form method="post" id="Equipment_Detail_Form">
+        <input type="text" id="Equipment_Detail_ID" name="ID" style="display:none" />
+        <table>
+            <tr>
+                <th>设备编码</th>
+                <td><input id="Equipment_Detail_EquipmentCode" name="EquipmentCode"/></td>
+            </tr>
+            <tr>
+                <th>设备名称</th>
+                <td><input id="Equipment_Detail_EquipmentSettingID" name="EquipmentSettingID"/></td>
+            </tr>
+            <tr>
+                <th>IP地址</th>
+                <td><input id="Equipment_Detail_IP" name="IP"/></td>
+            </tr>
+            <tr>
+                <th>端口</th>
+                <td><input id="Equipment_Detail_Port" name="Port"/></td>
+            <tr>
+                 <th>波特率</th>
+                 <td><input id="Equipment_Detail_BaudRate" name="BaudRate"/></td>
+            </tr>
+            <tr>
+                    <th>数据位</th>
+                    <td><input id="Equipment_Detail_DataBits" name="DataBits"/></td>
+            <tr>
+                    <th>停止位</th>
+                    <td><input id="Equipment_Detail_StopBits" name="StopBits"/></td>
+            </tr>
+            <tr>
+                    <th>校验位</th>
+                    <td><input id="Equipment_Detail_Parity" name="Parity"/></td>
+            </tr>
+            <tr>
+                    <th>参数</th>
+                    <td><input id="Equipment_Detail_PropertyObj" name="PropertyObj"/></td>
+            </tr>
+            <tr>
+                <th>备注</th>
+                <td>
+                    <input type="text" id="Equipment_Detail_Remark" name="Remark"/>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+}
+
+@section SearchParams{
+<form id="Equipment_Search_Form" method="post">
+    <table>
+        <tr>
+            <th>设备编码</th>
+            <td><input id="Equipment_Search_EquipmentCode" type="text" name="EquipmentCode"/></td>
+            <th>设备类型</th>
+            <td><input id="Equipment_Search_EquipmentSettingID" name="EquipmentSettingID"/></td>
+            <td><a id="Equipment_Search_SearchBtn">查询</a><a id="Equipment_Search_CleanBtn">清空</a></td>
+        </tr>
+    </table>
+</form>
+}
+
+@section SearchResult{
+<table id="Equipment_Result_Datagrid" style="overflow:scroll"></table>
+}

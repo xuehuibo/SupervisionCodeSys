@@ -1,0 +1,287 @@
+﻿@{
+    ViewBag.Title = "ProductLine";
+    Layout = "~/Views/Shared/_TabLayout.cshtml";
+}
+@section JS{
+@*声明变量*@
+<script>
+    Tools.Namespace.register("SMKJ_FM.ProductLine.Search");
+    Tools.Namespace.register("SMKJ_FM.ProductLine.Detail");
+    Tools.Namespace.register("SMKJ_FM.ProductLine.Result");
+    Tools.Namespace.register("SMKJ_FM.ProductLine.WorkCenter");
+    SMKJ_FM.ProductLine.SelectUrl = "/ProductLine/Select";
+    SMKJ_FM.ProductLine.UpdateUrl = "/ProductLine/Update";
+    SMKJ_FM.ProductLine.InsertUrl = "/ProductLine/Insert";
+    SMKJ_FM.ProductLine.DeleteUrl = "/ProductLine/Delete";
+    SMKJ_FM.ProductLine.GetWorkCenter = "ProductLine/GetWorkCenterByProductLineID";
+</script>
+
+@*查询参数*@
+<script>
+    $(function () {
+        SMKJ_FM.ProductLine.Search.Form = $("#ProductLine_Search_Form").form();
+        SMKJ_FM.ProductLine.Search.LineCode = $("#ProductLine_Search_LineCode");
+        SMKJ_FM.ProductLine.Search.LineName = $("#ProductLine_Search_LineName");
+        SMKJ_FM.ProductLine.Search.ManageUser = $("#ProductLine_Search_ManageUser");
+        SMKJ_FM.ProductLine.Search.WorkShop = $("#ProductLine_Search_WorkShop");
+        SMKJ_FM.ProductLine.Search.Status = $("#ProductLine_Search_Status").combobox({
+            multiple: true,
+            editable: false,
+            required:false,
+            url: SMKJ_FM.Get.Status,
+            valueField: "ID",
+            textField: "Text"
+        });
+        SMKJ_FM.ProductLine.Search.SearchBtn = $("#ProductLine_Search_SearchBtn").linkbutton({
+            iconCls: "icon-search"
+        });
+        SMKJ_FM.ProductLine.Search.SearchBtn.click(function () {
+            SMKJ_FM.ProductLine.Result.Datagrid.datagrid({
+                queryParams: Tools.serializeObject(SMKJ_FM.ProductLine.Search.Form)
+            });
+        });
+
+        SMKJ_FM.ProductLine.Search.CleanBtn = $("#ProductLine_Search_CleanBtn").linkbutton({
+            iconCls: "icon-cancel"
+        });
+        SMKJ_FM.ProductLine.Search.CleanBtn.click(function () {
+            SMKJ_FM.ProductLine.Search.Form.form("clear");
+        });
+    });
+</script>
+
+
+@*明细对话框*@
+<script>
+    $(function () {
+        SMKJ_FM.ProductLine.Detail.Dialog = $("#ProductLine_Detail_Dialog").show().dialog({
+            title: "生产线信息",
+            width: 400,
+            height: 400,
+            modal: true,
+            closed: true,
+            onBeforeOpen: function () {
+                SMKJ_FM.ProductLine.Detail.Form.form("clear");
+            },
+            buttons: [
+                { text: "保存", iconCls: "icon-save", handler: function () {
+                    var url;
+                    if (SMKJ_FM.ProductLine.Detail.ID.val() == null || SMKJ_FM.ProductLine.Detail.ID.val() == "") {
+                        url = SMKJ_FM.ProductLine.InsertUrl;
+                    }
+                    else {
+                        url = SMKJ_FM.ProductLine.UpdateUrl;
+                    }
+                    SMKJ_FM.ProductLine.Detail.Form.form("submit", {
+                        url: url,
+                        queryParams: Tools.serializeObject(SMKJ_FM.ProductLine.Detail.Form),
+                        success: function (data) {
+                            var msg = eval("(" + data + ")");
+                            if (msg.Success == true) {
+                                $.messager.show({
+                                    title: "提示",
+                                    msg: msg.Msg,
+                                    showtype: "show",
+                                    timeout: 3000
+                                });
+                                SMKJ_FM.ProductLine.Detail.Dialog.dialog("close");
+                            }
+                            else {
+                                $.messager.alert("错误", msg.Msg, "error");
+                            }
+                        }
+                    })
+                }
+                },
+                { text: "关闭", iconCls: "icon-no", handler: function () {
+                    SMKJ_FM.ProductLine.Detail.Dialog.dialog("close");
+                }
+                }
+            ]
+        });
+
+        SMKJ_FM.ProductLine.Detail.Form = $("#ProductLine_Detail_Form").form();
+        SMKJ_FM.ProductLine.Detail.ID = $("#ProductLine_Detail_ID");
+        SMKJ_FM.ProductLine.Detail.LineCode = $("#ProductLine_Detail_LineCode").validatebox({
+            required: true,
+            missingMessage: "请填写生产线编码!"
+        });
+        SMKJ_FM.ProductLine.Detail.LineName = $("#ProductLine_Detail_LineName").validatebox({
+            required: true,
+            missingMessage: "请填写生产线名称"
+        });
+        SMKJ_FM.ProductLine.Detail.Status = $("#ProductLine_Detail_Status").combobox({
+            editable: false,
+            required: true,
+            missingMessage: "请选择状态",
+            multiple: false,
+            url: SMKJ_FM.Get.Status,
+            valueField: "ID",
+            textField: "Text"
+        });
+        SMKJ_FM.ProductLine.Detail.WorkComputer = $("#ProductLine_Detail_WorkComputer").combogrid({
+            panelWidth: 210,
+            required: true,
+            missingMessage: "请选择工控机",
+            url: SMKJ_FM.Get.WorkComputer,
+            idField: "ID",
+            textField: "WorkComputerName",
+            columns: [[
+                { field: "WorkComputerName", title: "工控机名称", width: 100 },
+                { field: "ComputerIP", title: "IP地址", width: 100 }
+            ]]
+        });
+        SMKJ_FM.ProductLine.Detail.WorkShop = $("#ProductLine_Detail_WorkShop");
+        SMKJ_FM.ProductLine.Detail.ManageUser = $("#ProductLine_Detail_ManageUser");
+        SMKJ_FM.ProductLine.Detail.Remark = $("#ProductLine_Detail_Remark");
+    });
+</script>
+
+@*查询结果*@
+<script>
+    $(function () {
+        SMKJ_FM.ProductLine.Result.Datagrid = $("#ProductLine_Result_Datagrid").datagrid({
+            url: SMKJ_FM.ProductLine.SelectUrl,
+            method: "post",
+            fit: true,
+            collapsible: true,
+            fitColumns: true,
+            queryParams: Tools.serializeObject(SMKJ_FM.ProductLine.Search.Form),
+            singleSelect: true,
+            rownumbers: true,
+            pagination: true,
+            pageSize: 20,
+            idField: "ID",
+            pageList: [10, 20, 50, 100],
+            columns: [[
+                { field: "LineCode", title: "生产线编码", width: 100 },
+                { field: "LineName", title: "生产线名称", width: 100 },
+                { field: "Work_Computer.WorkComputerName", title: "工控机", width: 100 },
+                { field: "StatusStr", title: "状态", width: 100 },
+                { field: "ManageUser", title: "负责人", width: 100 },
+                { field: "WorkShop", title: "车间", width: 100 },
+                { field: "Remark", title: "备注", width: 100 }
+            ]],
+            toolbar: [
+                "-",
+                { text: "增加", iconCls: "icon-add", handler: function () {
+                    SMKJ_FM.ProductLine.Detail.Dialog.dialog({ closed: false });
+                }
+                },
+                "-",
+                { text: "删除", iconCls: "icon-remove", handler: function () {
+                    var node = SMKJ_FM.ProductLine.Result.Datagrid.datagrid("getSelected");
+                    if (node == null) {
+                        return;
+                    }
+                    $.messager.confirm("提示", "确认删除该流水线?", function (r) {
+                        if (r) {
+                            $.post(SMKJ_FM.ProductLine.DeleteUrl, { ID: node.ID }, function (data) {
+                                var msg = eval("(" + data + ")");
+                                if (msg.Success) {
+                                    $.messager.show({
+                                        title: "提示",
+                                        msg: msg.Msg,
+                                        showtype: "show",
+                                        timeout: 3000
+                                    });
+                                }
+                                else {
+                                    $.messager.alert("错误", msg.Msg, "error");
+                                }
+                            })
+                        }
+                    });
+                }
+                },
+                "-",
+                { text: "编辑", iconCls: "icon-edit", handler: function () {
+                    var node = SMKJ_FM.ProductLine.Result.Datagrid.datagrid("getSelected");
+                    if (node == null) {
+                        return;
+                    }
+                    SMKJ_FM.ProductLine.Detail.Dialog.dialog({ closed: false });
+                    SMKJ_FM.ProductLine.Detail.Form.form("load", node);
+                    SMKJ_FM.ProductLine.Detail.WorkComputer.combogrid("setValue", node.Work_Computer.ID);
+                }
+                },
+            "-",
+            { text: "工位", iconCls: "icon-tip", handler: function () {
+                var node = SMKJ_FM.ProductLine.Result.Datagrid.datagrid("getSelected");
+                if (node != null) {
+                    window.open("/ProductLine/NewWorkCenterWindow?LineID=" + node.ID);
+                }
+            }
+            }
+            ]
+        });
+    });
+</script>
+
+
+}
+
+@section Components{
+<div id="ProductLine_Detail_Dialog" style="display:none">
+    <form method="post" id="ProductLine_Detail_Form">
+        <input id="ProductLine_Detail_ID" name="ID" style="display:none"/>
+        <table>
+            <tr>
+                <th>流水线编码</th>
+                <td><input id="ProductLine_Detail_LineCode" name="LineCode"/></td>
+            </tr>
+            <tr>
+                <th>流水线名称</th>
+                <td><input id="ProductLine_Detail_LineName" name="LineName"/></td>
+            </tr>
+            <tr>
+                <th>状态</th>
+                <td><input id="ProductLine_Detail_Status" name="Status"/></td>
+            </tr>
+            <tr>
+                <th>工控机</th>
+                <td><input id="ProductLine_Detail_WorkComputer" name="WorkComputerID"/></td>
+            </tr>
+            <tr>
+                <th>车间</th>
+                <td><input id="ProductLine_Detail_WorkShop" name="WorkShop"/></td>
+            </tr>
+            <tr>
+                <th>负责人</th>
+                <td><input id="ProductLine_Detail_ManageUser" name="ManageUser"/></td>
+            </tr>
+            <tr>
+                <th>备注</th>
+                <td><input id="ProductLine_Detail_Remark" name="Remark"/></td>
+            </tr>
+        </table>
+    </form>
+</div>
+}
+
+@section SearchParams{
+<form method="post" id="ProductLine_Search_Form">
+    <table>
+        <tr>
+            <th>生产线编码</th>
+            <td><input id="ProductLine_Search_LineCode" name="LineCode"/></td>
+            <th>生产线名称</th>
+            <td><input id="ProductLine_Search_LineName" name="LineName"/></td>
+            <th>负责人</th>
+            <td><input id="ProductLine_Search_ManageUser" name="ManageUser" /></td>
+        </tr>
+        <tr>
+            <th>车间</th>
+            <td><input id="ProductLine_Search_WorkShop" name="WorkShop"/></td>
+            <th>状态</th>
+            <td><input id="ProductLine_Search_Status"  name="Status"/></td>
+            <th></th>
+            <td><a id="ProductLine_Search_SearchBtn">查询</a ><a id="ProductLine_Search_CleanBtn">清空</a></td>
+        </tr>
+    </table>
+</form>
+}
+
+@section SearchResult{
+<table id="ProductLine_Result_Datagrid"></table>
+}

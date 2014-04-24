@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{87D71920-2B6A-4107-AA40-22755E98368D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ProductLineSettingCtl</RootNamespace>
+    <AssemblyName>ProductLineSettingCtl</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <RegisterForComInterop>true</RegisterForComInterop>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="SqlServerDll">
+      <HintPath>..\..\..\SqlServerDll\SqlServerDll\SqlServerDll\bin\Debug\SqlServerDll.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="EquipmentSettingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EquipmentSettingForm.Designer.cs">
+      <DependentUpon>EquipmentSettingForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DAL\BaseDAL.cs" />
+    <Compile Include="DAL\EquipmentDAL.cs" />
+    <Compile Include="DAL\EquipmentSettingDAL.cs" />
+    <Compile Include="DAL\LogWriter.cs" />
+    <Compile Include="DAL\Param.cs" />
+    <Compile Include="DAL\WorkCenterDAL.cs" />
+    <Compile Include="Des.cs" />
+    <Compile Include="EquipmentCtl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="EquipmentCtl.Designer.cs">
+      <DependentUpon>EquipmentCtl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="IObjectSafety.cs" />
+    <Compile Include="Models\Equipment.cs" />
+    <Compile Include="Models\EquipmentSetting.cs" />
+    <Compile Include="Models\ProductLine.cs" />
+    <Compile Include="Models\WorkCenter.cs" />
+    <Compile Include="Models\WorkComputer.cs" />
+    <Compile Include="ProductLineCtl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ProductLineCtl.Designer.cs">
+      <DependentUpon>ProductLineCtl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WorkCenterCtl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="WorkCenterCtl.Designer.cs">
+      <DependentUpon>WorkCenterCtl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WorkCenterSettingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WorkCenterSettingForm.Designer.cs">
+      <DependentUpon>WorkCenterSettingForm.cs</DependentUpon>
+    </Compile>
+    <Service Include="{94E38DFF-614B-4cbd-B67C-F211BB35CE8B}" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="EquipmentSettingForm.resx">
+      <DependentUpon>EquipmentSettingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EquipmentCtl.resx">
+      <DependentUpon>EquipmentCtl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ProductLineCtl.resx">
+      <DependentUpon>ProductLineCtl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WorkCenterCtl.resx">
+      <DependentUpon>WorkCenterCtl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WorkCenterSettingForm.resx">
+      <DependentUpon>WorkCenterSettingForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,90 @@
+﻿@{
+    ViewBag.Title = "包装关系操作";
+    Layout = "~/Views/Shared/_SimpleLayout.cshtml";
+}
+
+@section JS{
+@*注册空间*@
+<script>
+    Tools.Namespace.register("SMKJ_FM.PackRelation");
+    SMKJ_FM.PackRelation.DoUrl = "/PackRelation/Do";
+</script>
+
+@*控件*@
+<script>
+    $(function () {
+        SMKJ_FM.PackRelation.Form = $("#PackRelation_Form").form();
+        SMKJ_FM.PackRelation.DoFlag = $("#PackRelation_DoFlag").combobox({
+            editable: false,
+            multiple: false,
+            onSelect: function (r) {
+                var v = SMKJ_FM.PackRelation.DoFlag.combobox("getValue");
+                if (v == "Replace") {
+                    $("#SCodeTxt").text("源码");
+                    $("#DCodeTxt").text("目的码");
+                }
+                else {
+                    $("#SCodeTxt").text("子码");
+                    $("#DCodeTxt").text("父码");
+                }
+            }
+        });
+        SMKJ_FM.PackRelation.SCode = $("#PackRelation_SCode");
+        SMKJ_FM.PackRelation.DCode = $("#PackRelation_DCode");
+        SMKJ_FM.PackRelation.SaveBtn = $("#PackRelation_SaveBtn").linkbutton({
+            iconCls: "icon-save"
+        });
+        SMKJ_FM.PackRelation.SaveBtn.click(function () {
+            $.messager.confirm("提示", "确认进行该操作？", function (r) {
+                if (r) {
+                    $.post(SMKJ_FM.PackRelation.DoUrl, Tools.serializeObject(SMKJ_FM.PackRelation.Form), function (data) {
+                        var msg = eval("(" + data + ")");
+                        if (msg.Success) {
+                            $.messager.show({
+                                title: "提示",
+                                msg: msg.Msg,
+                                showtype: "show",
+                                timeout: 3000
+                            });
+                        }
+                        else {
+                            $.messager.alert("错误!", msg.Msg, "error");
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
+}
+
+@section Components{
+
+}
+
+@section Body{
+<form id="PackRelation_Form" method="post">
+<table>
+    <tr>
+        <th>操作类型</th>
+        <td><select id="PackRelation_DoFlag" name="DoFlag">
+            <option value="Replace">码替换</option>
+            <option value="UnRelation">取消关联</option>
+        </select></td>
+    </tr>
+    <tr>
+        <th id="SCodeTxt">源码</th>
+        <td><input id="PackRelation_SCode" name="SCode"/></td>
+    </tr>
+    <tr>
+        <th id="DCodeTxt">目的码</th>
+        <td><input id="PackRelation_DCode" name="DCode" /></td>
+    </tr>
+    <tr>
+        <th></th>
+        <td></td>
+        <td><a id="PackRelation_SaveBtn">保存</a></td>
+    </tr>
+</table>
+</form>
+}

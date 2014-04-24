@@ -1,0 +1,14 @@
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\bin\Debug\ProductListSettingCtl.dll
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\bin\Debug\ProductListSettingCtl.pdb
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\bin\Debug\SqlServerDll.dll
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\bin\Debug\SqlServerDll.pdb
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\obj\Debug\ResolveAssemblyReference.cache
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\obj\Debug\ProductListSettingCtl.EquipmentSettingForm.resources
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\obj\Debug\ProductListSettingCtl.EquipmentCtl.resources
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\obj\Debug\ProductListSettingCtl.ProductLineCtl.resources
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\obj\Debug\ProductListSettingCtl.WorkCenterCtl.resources
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\obj\Debug\ProductListSettingCtl.WorkCenterSettingForm.resources
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\obj\Debug\GenerateResource.read.1.tlog
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\obj\Debug\GenerateResource.write.1.tlog
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\obj\Debug\ProductListSettingCtl.dll
+D:\Documents\项目开发\赋码系统\SMKJ_FM\ProductListSettingCtl\obj\Debug\ProductListSettingCtl.pdb

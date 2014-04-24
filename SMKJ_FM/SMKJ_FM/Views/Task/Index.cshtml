@@ -1,0 +1,419 @@
+﻿@{
+    ViewBag.Title = "Task";
+    Layout = "~/Views/Shared/_TabLayout.cshtml";
+}
+@section JS{
+@*注册空间*@
+<script>
+    Tools.Namespace.register("SMKJ_FM.Task.Search");
+    Tools.Namespace.register("SMKJ_FM.Task.Result");
+    Tools.Namespace.register("SMKJ_FM.Task.Detail");
+    SMKJ_FM.Task.InsertUrl = "/Task/Insert";
+    SMKJ_FM.Task.UpdateUrl = "/Task/Update";
+    SMKJ_FM.Task.DeleteUrl = "/Task/Delete";
+    SMKJ_FM.Task.SelectUrl = "/Task/Select";
+    SMKJ_FM.Task.AuditUrl = "/Task/Audit";
+    SMKJ_FM.Task.UnDoUrl = "/Task/UnDo";
+</script>
+
+@*查询参数*@
+<script>
+    $(function () {
+        SMKJ_FM.Task.Search.Form = $("#Task_Search_Form").form();
+        SMKJ_FM.Task.Search.ProductID = $("#Task_Search_ProductID").combogrid({
+            url: SMKJ_FM.Get.Product,
+            editable: false,
+            panelWidth: 600,
+            idField: "ID",
+            textField: "ProductName",
+            columns: [[
+                { field: "ProductCode", title: "药品编码", width: 100 },
+                { field: "ProductName", title: "药品名称", width: 100 },
+                { field: "SubNo", title: "子类编码", width: 100 },
+                { field: "Spec", title: "规格", width: 100 },
+                { field: "PackSpec", title: "包装规格", width: 100 },
+                { field: "PermitNo", title: "批准文号", width: 200 }
+            ]]
+        });
+        SMKJ_FM.Task.Search.ProductLineID = $("#Task_Search_ProductLineID").combogrid({
+            url: SMKJ_FM.Get.ProductLine,
+            editable: false,
+            panelWidth: 450,
+            idField: "ID",
+            textField: "LineName",
+            columns: [[
+                { field: "LineCode", title: "生产线编码", width: 80 },
+                { field: "LineName", title: "生产线名称", width: 150 },
+                { field: "WorkShop", title: "车间", width: 150 },
+                { field: "ManageUser", title: "负责人", width: 60 }
+            ]]
+        });
+        SMKJ_FM.Task.Search.Status = $("#Task_Search_Status").combobox({
+            multiple: true,
+            editable: false,
+            required:false,
+            url: SMKJ_FM.Get.TaskStatus,
+            valueField: "ID",
+            textField: "Text"
+        });
+        SMKJ_FM.Task.Search.SearchBtn = $("#Task_Search_SearchBtn").linkbutton({
+            iconCls: "icon-search"
+        });
+        SMKJ_FM.Task.Search.SearchBtn.click(function () {
+            SMKJ_FM.Task.Result.Datagrid.datagrid({
+                queryParams: Tools.serializeObject(SMKJ_FM.Task.Search.Form)
+            });
+        })
+        SMKJ_FM.Task.Search.CleanBtn = $("#Task_Search_CleanBtn").linkbutton({
+            iconCls: "icon-cancel"
+        });
+        SMKJ_FM.Task.Search.CleanBtn.click(function () {
+            SMKJ_FM.Task.Search.Form.form("clear");
+        });
+    });
+</script>
+
+@*查询结果*@
+<script>
+    $(function () {
+        SMKJ_FM.Task.Result.Datagrid = $("#Task_Result_Datagrid").datagrid({
+            url: SMKJ_FM.Task.SelectUrl,
+            fit: true,
+            method: "post",
+            queryParams: Tools.serializeObject(SMKJ_FM.Task.Search.Form),
+            singleSelect: true,
+            rownumbers: true,
+            pagination: true,
+            idField: "ID",
+            pageSize: 20,
+            pageList: [10, 20, 50, 100],
+            frozenColumns: [[
+                { field: "TaskCode", title: "任务编码", width: 100 },
+                { field: "ProductLine.LineName", title: "生产线", width: 100 },
+                { field: "Product.ProductName", title: "产品名称", width: 100 },
+                { field: "PackageSpec.PackageSpec", title: "规格", width: 100 },
+                { field: "BatchNo", title: "批号", width: 100 },
+                { field: "StatusStr", title: "任务状态", width: 50 }
+            ]],
+            columns: [[
+                { field: "PlanAmount", title: "计划量", width: 50 },
+                { field: "TaskAmount", title: "任务量", width: 50 },
+                { field: "DoneAmount", title: "完成量", width: 50 },
+                { field: "CreateUser.UserName", title: "创建人", width: 50 },
+                { field: "CreateDate", title: "创建日期", width: 50 },
+                { field: "StartDate", title: "开工日期", width: 50 },
+                { field: "EndDate", title: "完工日期", width: 50 },
+                { field: "ProductDate", title: "生产期", width: 50 },
+                { field: "InvalidDate", title: "有效期", width: 50 },
+                { field: "AuditUser.UserName", title: "审核人", width: 50 },
+                { field: "AuditDate", title: "审核日期", width: 50 }
+            ]],
+            toolbar: [
+                { text: "新建", iconCls: "icon-add", handler: function () {
+                    SMKJ_FM.Task.Detail.Dialog.dialog("open");
+                }
+                },
+                { text: "修改", iconCls: "icon-edit", handler: function () {
+                    var node = SMKJ_FM.Task.Result.Datagrid.datagrid("getSelected");
+                    if (node != null) {
+                        if (node.Status != 0 && node.Status != 5) {
+                            $.messager.alert("错误", "只有[未审核]和[已返工]的任务被允许修改!");
+                            return;
+                        }
+                        SMKJ_FM.Task.Detail.Dialog.dialog("open");
+                        SMKJ_FM.Task.Detail.Form.form("load", node);
+                        SMKJ_FM.Task.Detail.ProductLine.combogrid("setValue", node.ProductLine.ID);
+                        SMKJ_FM.Task.Detail.Product.combogrid("setValue", node.Product.ID);
+                        SMKJ_FM.Task.Detail.PackageRule.combogrid("setValue", node.PackageRule.ID);
+                    }
+                }
+                },
+                { text: "删除", iconCls: "icon-remove", handler: function () {
+                    var node = SMKJ_FM.Task.Result.Datagrid.datagrid("getSelected");
+                    if (node != null) {
+                        if (node.Status != 0 && node.Status != 5) {
+                            $.messager.alert("错误", "只有[未审核]和[已返工]的任务被允许删除!");
+                            return;
+                        }
+                        $.messager.confirm("提示", "确定删除该任务?", function (r) {
+                            if (r) {
+                                $.post(SMKJ_FM.Task.DeleteUrl, { ID: node.ID }, function (data) {
+                                    var msg = eval("(" + data + ")");
+                                    if (msg.Success) {
+                                        $.messager.show({
+                                            title: "提示",
+                                            msg: msg.Msg,
+                                            showtype: "show",
+                                            timeout: 3000
+                                        });
+                                        SMKJ_FM.Task.Result.Datagrid.datagrid("reload");
+                                    }
+                                    else {
+                                        $.messager.alert("错误!", msg.Msg, "error");
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }
+                },
+                { text: "审核", iconCls: "icon-ok", handler: function () {
+                    var node = SMKJ_FM.Task.Result.Datagrid.datagrid("getSelected");
+                    if (node != null) {
+                        if (node.Status != 0 && node.Status != 5) {
+                            $.messager.alert("审核失败", "只有[未审核]和[已返工]的任务,才能被审核");
+                        }
+                        else {
+                            $.messager.confirm("提示", "确认审核该任务?", function (r) {
+                                if (r) {
+                                    $.post(SMKJ_FM.Task.AuditUrl, { ID: node.ID, AuditUserID: Home_User.ID }, function (data) {
+                                        var msg = eval("(" + data + ")");
+                                        if (msg.Success) {
+                                            $.messager.show({
+                                                title: "提示",
+                                                showtype: "show",
+                                                timeout: 3000,
+                                                msg: msg.Msg
+                                            });
+                                            SMKJ_FM.Task.Result.Datagrid.datagrid("reload");
+                                        }
+                                        else {
+                                            $.messager.alert("错误", msg.Msg, "error");
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
+                },
+                { text: "返工", iconCls: "icon-undo", handler: function () {
+                    var node = SMKJ_FM.Task.Result.Datagrid.datagrid("getSelected");
+                    if (node != null) {
+                        if (node.Status != 1 && node.Status != 4) {
+                            $.messager.alert("返工失败", "只有[已审核]和[已结束]的任务被允许返工!");
+                        }
+                        else {
+                            $.messager.confirm("提示", "确认返工该任务?", function (r) {
+                                if (r) {
+                                    $.post(SMKJ_FM.Task.UnDoUrl, { ID: node.ID }, function (data) {
+                                        var msg = eval("(" + data + ")");
+                                        if (msg.Success) {
+                                            $.messager.show({
+                                                title: "提示",
+                                                showtype: "show",
+                                                timeout: 3000,
+                                                msg: msg.Msg
+                                            });
+                                            SMKJ_FM.Task.Result.Datagrid.datagrid("reload");
+                                        }
+                                        else {
+                                            $.messager.alert("错误", msg.Msg, "error");
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
+                }
+            ]
+        });
+    });
+</script>
+
+@*明细窗口*@
+<script>
+    $(function () {
+        SMKJ_FM.Task.Detail.Dialog = $("#Task_Detail_Dialog").show().dialog({
+            title: "任务信息",
+            closed: true,
+            width: 300,
+            height: 350,
+            modal: true,
+            onBeforeOpen: function () {
+                SMKJ_FM.Task.Detail.Form.form("clear");
+                SMKJ_FM.Task.Detail.CreateUser.val(Home_User.ID);
+            },
+            buttons: [
+                { text: "保存", iconCls: "icon-save", handler: function () {
+                    var url;
+                    if (SMKJ_FM.Task.Detail.ID.val() == null || SMKJ_FM.Task.Detail.ID.val() == "") {
+                        url = SMKJ_FM.Task.InsertUrl;
+                    }
+                    else {
+                        url = SMKJ_FM.Task.UpdateUrl;
+                    }
+                    SMKJ_FM.Task.Detail.Form.form("submit", {
+                        url: url,
+                        queryParams: Tools.serializeObject(SMKJ_FM.Task.Search.Form),
+                        success: function (data) {
+                            var msg = eval("(" + data + ")");
+                            if (msg.Success == true) {
+                                $.messager.show({
+                                    title: "提示",
+                                    msg: msg.Msg,
+                                    showtype: "show",
+                                    timeout: 3000
+                                });
+                                SMKJ_FM.Task.Detail.Dialog.dialog("close");
+                                SMKJ_FM.Task.Result.Datagrid.datagrid("reload");
+                            }
+                            else {
+                                $.messager.alert("错误", msg.Msg, "error");
+                            }
+                        }
+                    });
+                }
+                },
+                { text: "关闭", iconCls: "icon-no", handler: function () {
+                    SMKJ_FM.Task.Detail.Dialog.dialog("close");
+                }
+                }
+            ]
+        });
+        SMKJ_FM.Task.Detail.Form = $("#Task_Detail_Form").form();
+        SMKJ_FM.Task.Detail.ID = $("#Task_Detail_ID");
+        SMKJ_FM.Task.Detail.CreateUser = $("#Task_Detail_CreateUserID");
+        SMKJ_FM.Task.Detail.TaskCode = $("#Task_Detail_TaskCode").validatebox({
+            required: true,
+            missingMessage: "请输入任务编码"
+        });
+        SMKJ_FM.Task.Detail.ProductLine = $("#Task_Detail_ProductLine").combogrid({
+            url: SMKJ_FM.Get.ProductLine,
+            idField: "ID",
+            textField: "LineName",
+            panelWidth: 300,
+            multiple: false,
+            editable: false,
+            required: true,
+            missingMessage: "请选择生产线",
+            columns: [[
+                { field: "LineCode", title: "编码", width: 100 },
+                { field: "LineName", title: "名称", width: 100 },
+                { field: "WorkShop", title: "车间", width: 100 },
+                { field: "ManageUser", title: "负责人", width: 100 }
+            ]]
+        });
+        SMKJ_FM.Task.Detail.BatchNo = $("#Task_Detail_BatchNo").validatebox({
+            required: true,
+            missingMessage: "请输入批次号"
+        });
+        SMKJ_FM.Task.Detail.Product = $("#Task_Detail_Product").combogrid({
+            required: true,
+            missingMessage: "请选择产品",
+            url: SMKJ_FM.Get.Product,
+            idField: "ID",
+            textField: "ProductName",
+            panelWidth: 500,
+            multiple: false,
+            editable: false,
+            frozenColumns: [[
+                { field: "ProductCode", title: "产品编码", width: 100 },
+                { field: "ProductName", title: "产品名称", width: 100 },
+                { field: "SubNo", title: "子类编码", width: 100 }
+            ]],
+            columns: [[
+                { field: "Spec", title: "规格", width: 100 },
+                { field: "PackSpec", title: "包装规格", width: 100 },
+                { field: "PackUnit", title: "包装单位", width: 100 }
+            ]]
+        });
+        SMKJ_FM.Task.Detail.PackageRule = $("#Task_Detail_PackageRule").combogrid({
+            required: true,
+            missingMessage: "请选择包装规格",
+            url: SMKJ_FM.Get.PackageRule,
+            idField: "ID",
+            textField: "PackageRuleName",
+            panelWidth: 310,
+            multiple: false,
+            editable: false,
+            columns: [[
+                { field: "PackageRuleName", title: "名称", width: 100 },
+                { field: "LevelCount", title: "包装级数", width: 100 },
+                { field: "CascadeCode", title: "包装比例", width: 100 }
+            ]]
+        });
+        SMKJ_FM.Task.Detail.TaskAmount = $("#Task_Detail_TaskAmount").numberbox({
+            required: true,
+            missingMessage: "请输入任务量"
+        });
+        SMKJ_FM.Task.Detail.ProductDate = $("#Task_Detail_ProductDate").datebox();
+        SMKJ_FM.Task.Detail.InvalidDate = $("#Task_Detail_InvalidDate").datebox();
+    });
+</script>
+}
+
+@section Components{
+<div id="Task_Detail_Dialog" style=" display:none">
+    <form id="Task_Detail_Form" method="post">
+        <input id="Task_Detail_ID" name="ID" style="display:none"/>
+        <input id="Task_Detail_CreateUserID" name="CreateUserID"  style="display:none"/>
+        <table>
+            <tr>
+                <th>任务编码</th>
+                <td><input id="Task_Detail_TaskCode" name="TaskCode"/></td>
+            </tr>
+            <tr>
+                <th>生产线</th>
+                <td><input id="Task_Detail_ProductLine" name="ProductLineID"/></td>
+            </tr>
+            <tr>
+                <th>批次号</th>
+                <td><input id="Task_Detail_BatchNo" name="BatchNo"/></td>
+            </tr>
+            <tr>
+                <th>产品</th>
+                <td><input id="Task_Detail_Product" name="ProductID"/></td>
+            </tr>
+            <tr>
+                <th>包装规格</th>
+                <td><input id="Task_Detail_PackageRule" name="PackageRuleID"/></td>
+            </tr>
+            <tr>
+                <th>任务量</th>
+                <td><input id="Task_Detail_TaskAmount" name="TaskAmount"/></td>
+            </tr>
+            <tr>
+                <th>生产期</th>
+                <td><input id="Task_Detail_ProductDate" name="ProductDate"/></td>
+            </tr>
+            <tr>
+                <th>有效期</th>
+                <td><input id="Task_Detail_InvalidDate" name="InvalidDate"/></td>
+            </tr>
+            <tr>
+                <th>备注</th>
+                <td><input id="Task_Detail_Remark" name="Remark"/></td>
+            </tr>
+        </table>
+    </form>
+</div>
+}
+
+@section SearchParams{
+<form id="Task_Search_Form" method="post">
+    <table>
+        <tr>
+            <th>任务编码</th>
+            <td><input id="Task_Search_TaskCode" name="TaskCode"/></td>
+            <th>产品</th>
+            <td><input id="Task_Search_ProductID" name="ProductID"/></td>
+            <th>生产线</th>
+            <td><input id="Task_Search_ProductLineID" name="ProductLineID"/></td>
+        </tr>
+        <tr>
+            <th>批次号</th>
+            <td><input id="Task_Search_BatchNo" name="BatchNo"/></td>
+            <th>任务状态</th>
+            <td><input id="Task_Search_Status" name="Status" /></td>
+            <td></td>
+            <td><a id="Task_Search_SearchBtn">查询</a><a id="Task_Search_CleanBtn">清空</a></td>
+        </tr>
+    </table>
+</form>
+}
+
+@section SearchResult{
+   <table id="Task_Result_Datagrid" style="overflow:scroll"></table>
+}

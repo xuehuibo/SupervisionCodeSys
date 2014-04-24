@@ -1,0 +1,5 @@
+D:\Documents\项目开发\赋码系统\SMKJ_FM\Model\bin\Debug\Model.dll
+D:\Documents\项目开发\赋码系统\SMKJ_FM\Model\bin\Debug\Model.pdb
+D:\Documents\项目开发\赋码系统\SMKJ_FM\Model\obj\Debug\ResolveAssemblyReference.cache
+D:\Documents\项目开发\赋码系统\SMKJ_FM\Model\obj\Debug\Model.dll
+D:\Documents\项目开发\赋码系统\SMKJ_FM\Model\obj\Debug\Model.pdb

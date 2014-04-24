@@ -1,0 +1,41 @@
+﻿	<header>
+<script src="/Scripts/easyui/jquery-1.7.2.js">
+<script src="/Scripts/easyui/jquery.easyui.js">
+<script src="/Scripts/easyui/locale/easyui-lang-zh_CN.js">
+<link rel="stylesheet" href="/Scripts/easyui/themes/icon.css">
+<link rel="stylesheet" href="/Scripts/easyui/themes/default/easyui.css">
+</header>
+<script>
+
+    $(function () {
+        $("#OrgGd").datagrid({
+            url: "",
+            fit:true,
+            columns: [[
+                { field: "OrgCode", title: "组织代码", width: 100 },
+                { field: "OrgName", title: "组织名称", width: 100 },
+                { field: "OrgType", title: "组织类型", width: 100 },
+            ]],
+            fitColumns: true,
+            autoRowHeight: true,
+            pagination: true,
+            rownumbers: true,
+            toolbar: [
+                "-",
+                { iconCls: "icon-add" },
+                "-",
+                { iconCls: "icon-no" },
+                "-",
+                {iconCls:"icon-edit"}
+            ]
+        });
+
+    })
+</script>
+
+
+            <table id="OrgGd" >
+            </table>
+
+
+

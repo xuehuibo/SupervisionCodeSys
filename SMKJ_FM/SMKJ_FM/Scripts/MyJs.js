@@ -1,0 +1,16 @@
+﻿Tools.Namespace.register("SMKJ_FM.Get");
+SMKJ_FM.Get.Org = "/SysRes/GetOrg";
+SMKJ_FM.Get.Role = "/SysRes/GetRole";
+SMKJ_FM.Get.Status = "/SysRes/GetStatus";
+SMKJ_FM.Get.OrgType = "/SysRes/GetOrgType";
+SMKJ_FM.Get.ValidTimeUnit = "/SysRes/GetValidTimeUnit";
+SMKJ_FM.Get.GetCodeType = "/SysRes/GetCodeType";
+SMKJ_FM.Get.ProductCategory = "/SysRes/GetProductCategory";
+SMKJ_FM.Get.EquipmentSetting = "/SysRes/GetEquipmentSetting";
+SMKJ_FM.Get.WorkComputer = "/SysRes/GetWorkComputer";
+SMKJ_FM.Get.Product = "/SysRes/GetProduct";
+SMKJ_FM.Get.ProductLine = "/SysRes/GetProductLine";
+SMKJ_FM.Get.TaskStatus = "/SysRes/GetTaskStatus";
+SMKJ_FM.Get.PackageRule = "/SysRes/GetPackageRule";
+SMKJ_FM.Get.StopBitsEnum = "/SysRes/GetStopBitsEnum";
+SMKJ_FM.Get.ParityEnum = "/SysRes/GetParityEnum";

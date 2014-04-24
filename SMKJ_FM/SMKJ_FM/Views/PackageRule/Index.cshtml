@@ -1,0 +1,293 @@
+﻿@{
+    ViewBag.Title = "PackageRule";
+    Layout = "~/Views/Shared/_TabLayout.cshtml";
+}
+@section JS{
+<script>
+    Tools.Namespace.register("SMKJ_FM.PackageRule.Search");
+    Tools.Namespace.register("SMKJ_FM.PackageRule.Result");
+    Tools.Namespace.register("SMKJ_FM.PackageRule.Detail");
+    Tools.Namespace.register("SMKJ_FM.PackageRuleItem");
+    SMKJ_FM.PackageRule.InsertUrl = "/PackageRule/Insert";
+    SMKJ_FM.PackageRule.SelectUrl = "/PackageRule/Select";
+    SMKJ_FM.PackageRule.UpdateUrl = "/PackageRule/Update";
+    SMKJ_FM.PackageRule.DeleteUrl = "/PackageRule/Delete";
+</script>
+
+@*查询参数*@
+<script>
+    $(function () {
+        SMKJ_FM.PackageRule.Search.Form = $("#PackageRule_Search_Form").form();
+        SMKJ_FM.PackageRule.Search.PackageRuleName = $("#PackageRule_Search_PackageRuleName");
+        SMKJ_FM.PackageRule.Search.LevelCount = $("#PackageRule_Search_LevelCount").validatebox();
+        SMKJ_FM.PackageRule.Search.CascadeCode = $("#PackageRule_Search_CascadeCode");
+        SMKJ_FM.PackageRule.Search.Status = $("#PackageRule_Search_Status").combobox({
+            multiple: true,
+            required:false,
+            editable: false,
+            url: SMKJ_FM.Get.Status,
+            valueField: "ID",
+            textField: "Text"
+        });
+        SMKJ_FM.PackageRule.Search.SearchBtn = $("#PackageRule_Search_SearchBtn").linkbutton({
+            iconCls: "icon-search"
+        });
+        SMKJ_FM.PackageRule.Search.SearchBtn.click(function () {
+            SMKJ_FM.PackageRule.Result.Datagrid.datagrid({
+                queryParams: Tools.serializeObject(SMKJ_FM.PackageRule.Search.Form)
+            });
+        });
+        SMKJ_FM.PackageRule.Search.CleanBtn = $("#PackageRule_Search_CleanBtn").linkbutton({
+            iconCls: "icon-cancel"
+        });
+        SMKJ_FM.PackageRule.Search.CleanBtn.click(function () {
+            SMKJ_FM.PackageRule.Search.Form.form("clear");
+        });
+    });
+</script>
+
+@*查询结果*@
+<script>
+    $(function () {
+        SMKJ_FM.PackageRule.Result.Datagrid = $("#PackageRule_Result_Datagrid").datagrid({
+            url: SMKJ_FM.PackageRule.SelectUrl,
+            fit: true,
+            queryParams: Tools.serializeObject(SMKJ_FM.PackageRule.Search.Form),
+            method: "post",
+            fitColumns: true,
+            idFiled: "ID",
+            rownumbers: true,
+            pagination: true,
+            singleSelect: true,
+            pageSize: 20,
+            pageList: [10, 20, 50, 100],
+            columns: [[
+                { field: "PackageRuleName", title: "规则名称", width: 100 },
+                { field: "LevelCount", title: "包装级数", width: 100 },
+                { field: "CascadeCode", title: "包装比例", width: 100 },
+                { field: "StatusStr", title: "状态", width: 100 },
+                { field: "CreateUser.UserName", title: "创建人", width: 100 },
+                { field: "CreateDate", title: "创建时间", width: 100 }
+            ]],
+            toolbar: [
+            "-",
+            { text: "增加", iconCls: "icon-add", handler: function () {
+                SMKJ_FM.PackageRule.Detail.Dialog.dialog({ closed: false });
+            }
+            },
+            { text: "删除", iconCls: "icon-remove", handler: function () {
+                var node = SMKJ_FM.PackageRule.Result.Datagrid.datagrid("getSelected");
+                if (node != null) {
+                    $.messager.confirm("提示", "确认删除该包装规则?", function (r) {
+                        if (r) {
+                            $.post(SMKJ_FM.PackageRule.DeleteUrl, { ID: node.ID }, function (data) {
+                                var msg = eval("(" + data + ")");
+                                if (msg.Success) {
+                                    $.messager.show({
+                                        title: "提示",
+                                        msg: msg.Msg,
+                                        timeout: 3000,
+                                        showtype: "show"
+                                    });
+                                    SMKJ_FM.PackageRule.Result.Datagrid.datagrid("reload");
+                                }
+                                else {
+                                    $.messager.alert("错误", msg.Msg, "error");
+                                }
+                            });
+                        }
+                    });
+
+                }
+            }
+            },
+            { text: "编辑", iconCls: "icon-edit", handler: function () {
+                var node = SMKJ_FM.PackageRule.Result.Datagrid.datagrid("getSelected");
+                if (node != null) {
+                    SMKJ_FM.PackageRule.Detail.Dialog.dialog({ closed: false });
+                    SMKJ_FM.PackageRule.Detail.Form.form("load", node);
+                    SMKJ_FM.PackageRuleItem.Datagrid.datagrid("loadData", node.PackageRule_Item);
+                }
+            }
+            }
+            ]
+        });
+    });
+</script>
+
+@*明细对话框*@
+<script>
+    $(function () {
+        SMKJ_FM.PackageRule.Detail.Form = $("#PackageRule_Detail_Form").form();
+        SMKJ_FM.PackageRule.Detail.ID = $("#PackageRule_Detail_ID");
+        SMKJ_FM.PackageRule.Detail.PackageRuleName = $("#PackageRule_Detail_PackageRuleName");
+        SMKJ_FM.PackageRule.Detail.Status = $("#PackageRule_Detail_Status").combobox({
+            editable: false,
+            multiple: false,
+            required: true,
+            missingMessage: "请选择初始状态",
+            value: "1",
+            url: SMKJ_FM.Get.Status,
+            valueField: "ID",
+            textField: "Text"
+        });
+        SMKJ_FM.PackageRule.Detail.Remark = $("#PackageRule_Detail_Remark");
+        SMKJ_FM.PackageRule.Detail.Dialog = $("#PackageRule_Detail_Dialog").show().dialog({
+            title: "规则明细",
+            width: 500,
+            height: 400,
+            closed: true,
+            modal: true,
+            onBeforeOpen: function () {
+                SMKJ_FM.PackageRule.Detail.Form.form("clear");
+                SMKJ_FM.PackageRuleItem.Datagrid.datagrid("loadData", []);
+            },
+            buttons: [
+                { text: "保存", iconCls: "icon-save", handler: function () {
+                    var url;
+                    if (SMKJ_FM.PackageRule.Detail.ID.val() == null || SMKJ_FM.PackageRule.Detail.ID.val() == '') {
+                        url = SMKJ_FM.PackageRule.InsertUrl;
+                    }
+                    else {
+                        url = SMKJ_FM.PackageRule.UpdateUrl;
+                    }
+                    SMKJ_FM.PackageRuleItem.Datagrid.datagrid("acceptChanges");
+                    var items = SMKJ_FM.PackageRuleItem.Datagrid.datagrid("getData").rows;
+                    var istr = Tools.ObjectToString(items);
+                    $.post(url, { ID: SMKJ_FM.PackageRule.Detail.ID.val(), PackageRuleName: SMKJ_FM.PackageRule.Detail.PackageRuleName.val(),
+                        Status: SMKJ_FM.PackageRule.Detail.Status.combobox("getValue"), Remark: SMKJ_FM.PackageRule.Detail.Remark.val(), CreateUserID: Home_User.ID,
+                        ItemsJson: istr
+                    }, function (data) {
+                        var msg = eval("(" + data + ")");
+                        if (msg.Success) {
+                            $.messager.show({
+                                title: "提示",
+                                msg: msg.Msg,
+                                timeout: 3000,
+                                showtype: "show"
+                            });
+                            SMKJ_FM.PackageRule.Detail.Dialog.dialog("close");
+                            SMKJ_FM.PackageRule.Result.Datagrid.datagrid("reload");
+
+                        }
+                        else {
+                            $.messager.alert("错误", msg.Msg, "error");
+                        }
+                    });
+                }
+                },
+                { text: "关闭", iconCls: "icon-no", handler: function () {
+                    SMKJ_FM.PackageRuleItem.Datagrid.datagrid("rejectChanges");
+                    SMKJ_FM.PackageRule.Detail.Dialog.dialog("close");
+
+                }
+                }
+            ]
+        });
+    });
+</script>
+
+@*规则明细*@
+<script>
+    $(function () {
+        var lastIndex;
+        SMKJ_FM.PackageRuleItem.Datagrid = $("#PackageRuleItem_Datagrid").datagrid({
+            fit: true,
+            onClickRow: function (rowIndex, rowData) {
+                if (rowIndex != lastIndex) {
+                    SMKJ_FM.PackageRuleItem.Datagrid.datagrid("beginEdit", rowIndex);
+                    if (lastIndex != null) {
+                        SMKJ_FM.PackageRuleItem.Datagrid.datagrid("endEdit", lastIndex);
+                    }
+                    lastIndex = rowIndex;
+                }
+            },
+            singleSelect: true,
+            columns: [[
+                { field: "PackageRuleID", hidden: true },
+                { field: "LevelNo", title: "包装级别", width: 150 },
+                { field: "Amount", title: "包装数量", width: 150, editor: { type: "numberbox", options: { required: true, missingMessage: "请填写包装数量"}} },
+                { field: "PrintAmount", title: "打印数量", width: 150, editor: { type: "numberbox", options: { required: true, missingMessage: "请填写打印数量"}} }
+             ]],
+            toolbar: [
+                { text: "增加", iconCls: "icon-add", handler: function () {
+                    var levelNo = SMKJ_FM.PackageRuleItem.Datagrid.datagrid("getData").total;
+                    if (levelNo == 4) {
+                        $.messager.alert("增加失败!", "最多4层包装", "info");
+                    }
+                    else {
+                        SMKJ_FM.PackageRuleItem.Datagrid.datagrid("appendRow", { PackageRuleID: SMKJ_FM.PackageRule.Detail.ID.val(), Amount: 1, PrintAmount: 1, LevelNo: levelNo + 1 });
+                        SMKJ_FM.PackageRuleItem.Datagrid.datagrid("beginEdit", levelNo);
+                    }
+                }
+                },
+                { text: "删除", iconCls: "icon-remove", handler: function () {
+                    var index = SMKJ_FM.PackageRuleItem.Datagrid.datagrid("getData").total-1;
+                    SMKJ_FM.PackageRuleItem.Datagrid.datagrid("deleteRow", index);
+                }
+                },
+                { text: "撤销", iconCls: "icon-undo", handler: function () {
+                    SMKJ_FM.PackageRuleItem.Datagrid.datagrid("rejectChanges");
+                }
+                }
+             ]
+        });
+    });
+</script>
+}
+@section Components{
+<div id="PackageRule_Detail_Dialog" style="display:none">
+<form id="PackageRule_Detail_Form" method="post">
+    <input id="PackageRule_Detail_ID" name="ID" style="display:none"/>
+        <table>
+        <tr>
+            <th>规则名称</th>
+            <td><input id="PackageRule_Detail_PackageRuleName" name="PackageRuleName"/></td>
+             <th>状态</th>
+            <td><input id="PackageRule_Detail_Status" name="Status"/></td>
+        </tr>
+        <tr>
+            <th>备注</th>
+            <td><input id="PackageRule_Detail_Remark" name="Remark"/></td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td>
+                        <b>说明：包装数量是指在一整套包装中，拥有该级包装的数量</b>
+<b>如：1：10：100，代表在一个大包装中有10个中包，100个小包</b>
+            </td>
+        </tr>
+    </table>
+</form>
+
+<table id="PackageRuleItem_Datagrid"></table>
+
+</div>
+}
+@section SearchParams{
+<form id="PackageRule_Search_Form" method="post">
+    <table>
+        <tr>
+            <th>规则名称</th>
+            <td><input id="PackageRule_Search_PackageRuleName" name="PackageRuleName"/></td>
+            <th>包装级数</th>
+            <td><input id="PackageRule_Search_LevelCount" name="LevelCount"/></td>
+            <th>包装比例</th>
+            <td><input  id="PackageRule_Search_CascadeCode" name="CascadeCode"/></td>
+        </tr>
+        <tr>
+            <th>状态</th>
+            <td><input id="PackageRule_Search_Status" name="Status"/></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><a id="PackageRule_Search_SearchBtn">查询</a><a id="PackageRule_Search_CleanBtn">清空</a></td>
+        </tr>
+    </table>
+</form>
+}
+@section SearchResult{
+<table id="PackageRule_Result_Datagrid" style="overflow:scroll">
+</table>
+}

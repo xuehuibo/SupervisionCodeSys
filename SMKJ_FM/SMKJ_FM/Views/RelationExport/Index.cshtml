@@ -1,0 +1,162 @@
+﻿@{
+    ViewBag.Title = "RelationExport";
+    Layout = "~/Views/Shared/_TabLayout.cshtml";
+}
+
+@section JS{
+@*注册空间*@
+<script>
+    Tools.Namespace.register("SMKJ_FM.RelationExport.Search");
+    Tools.Namespace.register("SMKJ_FM.RelationExport.Result");
+    SMKJ_FM.RelationExport.SelectUrl = "/RelationExport/Select";
+
+</script>
+
+@*查询参数*@
+<script>
+    $(function () {
+        SMKJ_FM.RelationExport.Search.Form = $("#RelationExport_Search_Form").form();
+        SMKJ_FM.RelationExport.Search.Product = $("#RelationExport_Search_Product").combogrid({
+            url: SMKJ_FM.Get.Product,
+            editable: false,
+            required: false,
+            panelWidth: 600,
+            idField: "ID",
+            textField: "ProductName",
+            columns: [[
+                { field: "ProductCode", title: "药品编码", width: 100 },
+                { field: "ProductName", title: "药品名称", width: 100 },
+                { field: "SubNo", title: "子类编码", width: 100 },
+                { field: "Spec", title: "规格", width: 100 },
+                { field: "PackSpec", title: "包装规格", width: 100 },
+                { field: "PermitNo", title: "批准文号", width: 200 }
+            ]]
+        });
+        SMKJ_FM.RelationExport.Search.TaskCode = $("#RelationExport_Search_TaskCode");
+        SMKJ_FM.RelationExport.Search.BatchNo = $("#RelationExport_Search_BatchNo");
+        SMKJ_FM.RelationExport.Search.ProductLine = $("#RelationExport_Search_ProductLine").combogrid({
+            url: SMKJ_FM.Get.ProductLine,
+            editable: false,
+            required: false,
+            panelWidth: 450,
+            idField: "ID",
+            textField: "LineName",
+            columns: [[
+                { field: "LineCode", title: "生产线编码", width: 80 },
+                { field: "LineName", title: "生产线名称", width: 150 },
+                { field: "WorkShop", title: "车间", width: 150 },
+                { field: "ManageUser", title: "负责人", width: 60 }
+            ]]
+        });
+        SMKJ_FM.RelationExport.Search.EndDateBegin = $("#RelationExport_Search_EndDateBegin").datebox({
+            required: false
+        });
+        SMKJ_FM.RelationExport.Search.EndDateEnd = $("#RelationExport_Search_EndDateEnd").datebox({
+            required: false
+        });
+        SMKJ_FM.RelationExport.Search.SearchBtn = $("#RelationExport_Search_SearchBtn").linkbutton({
+            iconCls: "icon-search"
+        });
+        SMKJ_FM.RelationExport.Search.SearchBtn.click(function () {
+            SMKJ_FM.RelationExport.Result.Datagrid.datagrid({
+                queryParams: Tools.serializeObject(SMKJ_FM.RelationExport.Search.Form)
+            });
+        });
+        SMKJ_FM.RelationExport.Search.ClearBtn = $("#RelationExport_Search_ClearBtn").linkbutton({
+            iconCls: "icon-cancel"
+        });
+        SMKJ_FM.RelationExport.Search.ClearBtn.click(function () {
+            SMKJ_FM.RelationExport.Search.Form.form("clear");
+        });
+    });
+</script>
+
+@*查询结果*@
+<script>
+    $(function () {
+        SMKJ_FM.RelationExport.Result.Datagrid = $("#RelationExport_Result_Datagrid").datagrid({
+            url: SMKJ_FM.RelationExport.SelectUrl,
+            fit: true,
+            method: "post",
+            queryParams: Tools.serializeObject(SMKJ_FM.RelationExport.Search.Form),
+            singleSelect: false,
+            rownumbers: true,
+            pagination: true,
+            idField: "ID",
+            pageSize: 20,
+            pageList: [10, 20, 50, 100],
+            fitColumns: true,
+            frozenColumns: [[
+                { field: "ID", title: "ID", hidden: true },
+                { field: "TaskCode", title: "任务编码", width: 100 },
+                { field: "ProductLine.LineName", title: "生产线", width: 100 },
+                { field: "Product.ProductName", title: "产品名称", width: 100 },
+                { field: "PackageSpec.PackageSpec", title: "规格", width: 100 },
+                { field: "BatchNo", title: "批号", width: 100 }
+            ]],
+            columns: [[
+                { field: "DoneAmount", title: "完成量", width: 50 },
+                { field: "StartDate", title: "开工日期", width: 50 },
+                { field: "EndDate", title: "完工日期", width: 50 },
+                { field: "ProductDate", title: "生产期", width: 50 },
+                { field: "InvalidDate", title: "有效期", width: 50 }
+            ]],
+            toolbar: [
+                { text: "导出", iconCls: "icon-tip", handler: function () {
+                    var selecteds = SMKJ_FM.RelationExport.Result.Datagrid.datagrid("getSelections");
+                    if (selecteds.length == 0) {
+                        return;
+                    }
+                    var idArray = "";
+                    for (x in selecteds) {
+                        idArray = idArray + ";" + selecteds[x].ID;
+                    }
+                    var bar = $.messager.progress({
+                        title: "等待",
+                        msg: "正在生成",
+                        text: "正在生成关联关系文件..."
+                    });
+                    $.post("/RelationExport/Export", { IDArray: idArray }, function (r) {
+                        $.messager.progress('close');
+                        $.messager.alert("生成关联关系", "关联关系文件生成完毕，<br>文件位于服务器目录：<br>" + r, "info");
+                    });
+                }
+                }
+            ]
+        });
+    });
+</script>
+}
+
+@section Components{
+
+}
+
+@section SearchParams{
+    <form id="RelationExport_Search_Form" method="post">
+        <table>
+            <tr>
+                <th>产品</th>
+                <td><input id="RelationExport_Search_Product" name="ProductID"/></td>
+                <th>任务编码</th>
+                <td><input id="RelationExport_Search_TaskCode" name="TaskCode"/></td>
+                <th>批号</th>
+                <td><input id="RelationExport_Search_BatchNo" name="BatchNo"/></td>
+                <th>生产线</th>
+                <td><input id="RelationExport_Search_ProductLine" name="ProductLineID"/></td>
+            </tr>
+            <tr>
+                 <th>结束日期</th>
+                 <td><input id="RelationExport_Search_EndDateBegin" name="EndDateBegin"/></td>
+                 <th>-</th>
+                 <td><input id="RelationExport_Search_EndDateEnd" name="EndDateEnd"/></td>
+                 <th></th>
+                <td><a id="RelationExport_Search_SearchBtn">查询</a><a id="RelationExport_Search_ClearBtn">清除</a></td>
+            </tr>
+        </table>
+    </form>
+}
+@section SearchResult{
+<table id="RelationExport_Result_Datagrid" style="overflow:scroll">
+</table>
+}

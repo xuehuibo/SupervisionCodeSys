@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="终端接口XML Schema-3.0.xsd" Version="3.0">
+  <Events>
+    <Event Name="SalesWareHouseOut" MainAction="WareHouseOut">
+      <ActionMapping>
+        <Action Name="WareHouseOut">
+          <ActionData>CorpOrderID</ActionData>
+          <ActionData>Actor</ActionData>
+          <ActionData>ActDate</ActionData>
+          <ActionData>ToCorpID</ActionData>
+          <ActionData>Code</ActionData>
+        </Action>
+      </ActionMapping>
+      <DataMaping>
+        <MetaData Name="CorpOrderID" Type="String" />
+        <MetaData Name="Actor" Type="String" />
+        <MetaData Name="ActDate" Type="Date" />
+        <MetaData Name="ToCorpID" Type="String" />
+        <MetaData Name="Code" Type="String" />
+      </DataMaping>
+      <DataDesc>
+        <MetaDataDesc MetaName="Actor" IsParent="true">
+          <MetaDataDesc MetaName="Code" IsParent="false" />
+        </MetaDataDesc>
+        <MetaDataDesc MetaName="CorpOrderID" IsParent="true">
+          <MetaDataDesc MetaName="Code" IsParent="false" />
+        </MetaDataDesc>
+      </DataDesc>
+      <DataField>
+        <Data Code="81063110000679346140" CorpOrderID="1306070004" Actor="001" ActDate="2013-6-7 10:51:23" WrongCode="False" ToCorpID="" />
+<Data Code="81063110000656270319" CorpOrderID="1306070004" Actor="001" ActDate="2013-6-7 10:51:23" WrongCode="False" ToCorpID="" />
+<Data Code="81063110000753182763" CorpOrderID="1306070004" Actor="001" ActDate="2013-6-7 10:51:23" WrongCode="False" ToCorpID="" />
+<Data Code="81063110000681199759" CorpOrderID="1306070004" Actor="001" ActDate="2013-6-7 10:51:23" WrongCode="False" ToCorpID="" />
+<Data Code="81063110000676695670" CorpOrderID="1306070004" Actor="001" ActDate="2013-6-7 10:51:23" WrongCode="False" ToCorpID="" />
+<Data Code="81063110000738950507" CorpOrderID="1306070004" Actor="001" ActDate="2013-6-7 10:51:23" WrongCode="False" ToCorpID="" />
+<Data Code="81063110000669931205" CorpOrderID="1306070004" Actor="001" ActDate="2013-6-7 10:51:23" WrongCode="False" ToCorpID="" />
+<Data Code="81063110000899714870" CorpOrderID="1306070004" Actor="001" ActDate="2013-6-7 10:51:23" WrongCode="False" ToCorpID="" />
+<Data Code="81063110000667903524" CorpOrderID="1306070004" Actor="001" ActDate="2013-6-7 10:51:23" WrongCode="False" ToCorpID="" />
+<Data Code="81063110000743561400" CorpOrderID="1306070004" Actor="001" ActDate="2013-6-7 10:51:23" WrongCode="False" ToCorpID="" />
+</DataField>
+    </Event>
+  </Events>
+</Document>
